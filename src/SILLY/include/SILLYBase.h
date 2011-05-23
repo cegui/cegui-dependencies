@@ -39,11 +39,15 @@
 #if defined(_WIN32) || defined(__WIN32__)
 #   undef SILLY_OPT_INLINE // No inlining 
 #   undef SILLY_BE // Little Endian 
-#   ifdef SILLY_EXPORTS
-#       define SILLY_EXPORT __declspec(dllexport)
-#   else
-#       define SILLY_EXPORT __declspec(dllimport)
-#   endif
+#	ifdef SILLY_STATIC
+#		define SILLY_EXPORT
+#	else
+#		ifdef SILLY_EXPORTS
+#			define SILLY_EXPORT __declspec(dllexport)
+#		else
+#			define SILLY_EXPORT __declspec(dllimport)
+#		endif
+#	endif
 #else
 #   define SILLY_EXPORT
 #endif

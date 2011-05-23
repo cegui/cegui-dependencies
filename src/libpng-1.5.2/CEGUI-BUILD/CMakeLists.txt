@@ -3,7 +3,7 @@ set(DEPNAME libpng)
 file(GLOB SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "../png*.c")
 list(REMOVE_ITEM SOURCES ../pnggccrd.c ../pngvcrd.c ../pngtest.c)
 
-set(HEADERS png.h pngconf.h)
+set(HEADERS png.h pngconf.h pnglibconf.h)
 
 include_directories(../ ${CMAKE_BINARY_DIR}/include)
 

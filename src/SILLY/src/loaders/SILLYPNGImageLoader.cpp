@@ -65,9 +65,9 @@ void PNG_error_function(png_structp png_ptr,
 {
     //  printf("PNG Error: %s\n", error);
     // copied from libpng's pngerror.cpp
-    jmp_buf buf;
-    memcpy(buf, png_ptr->jmpbuf, sizeof(jmp_buf));
-    longjmp(buf, 1);
+    //jmp_buf buf;
+    //memcpy(buf, png_ptr->jmpbuf, sizeof(jmp_buf));
+    //longjmp(buf, 1);
 }
 
 
@@ -106,7 +106,7 @@ ImageContext* PNGImageLoader::loadHeader(PixelFormat& formatSource, DataSource* 
         delete png;
         return 0;
     }
-    png_set_error_fn(png->d_png_ptr, 0, PNG_error_function, PNG_warning_function);
+    png_set_error_fn(png->d_png_ptr, 0, 0, PNG_warning_function);
     png_set_read_fn(png->d_png_ptr, png, PNG_read_function);
     //png_set_sig_bytes(png->d_png_ptr, 8);
     
