@@ -68,7 +68,8 @@ macro(cegui_add_library _NAME _SOURCES_VAR _HEADERS_VAR)
 
 endmacro()
 
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/include")
 
-add_subdirectory(src/expat-2.0.1)
-add_subdirectory(src/freetype-2.4.4)
+add_subdirectory(src/expat-2.0.1/CEGUI-BUILD)
+add_subdirectory(src/freetype-2.4.4/CEGUI-BUILD)
 
