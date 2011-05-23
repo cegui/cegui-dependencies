@@ -74,4 +74,5 @@ add_subdirectory(src/expat-2.0.1/CEGUI-BUILD)
 add_subdirectory(src/freetype-2.4.4/CEGUI-BUILD)
 add_subdirectory(src/zlib-1.2.5/CEGUI-BUILD)
 add_subdirectory(src/libpng-1.5.2/CEGUI-BUILD)
+add_subdirectory(src/jpeg-8c/CEGUI-BUILD)
 
