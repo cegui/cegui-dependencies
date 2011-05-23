@@ -7,21 +7,17 @@ set(CMAKE_DEBUG_POSTFIX _d)
 
 cmake_dependent_option( CEGUI_MSVC_STATIC_RUNTIME "Specifies whether to the static runtime (/MT and /MTd) or the DLL runtime (/MD and /MDd)." FALSE "MSVC" FALSE )
 
+if (CEGUI_MSVC_STATIC_RUNTIME)
+    foreach(_BUILD_CONFIG DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+        foreach(_BUILD_VARS CMAKE_CXX_FLAGS_${_BUILD_CONFIG} CMAKE_C_FLAGS_${_BUILD_CONFIG})
+            string(REGEX REPLACE /MD /MT ${_BUILD_VARS} ${${_BUILD_VARS}})
+        endforeach()
+    endforeach()
+endif()
 
 if (MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
-
-
-#macro(cegui_set_msvc_runtime_flags)
-    if (CEGUI_MSVC_STATIC_RUNTIME)
-        foreach(_BUILD_CONFIG DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
-            foreach(_BUILD_VARS CMAKE_CXX_FLAGS_${_BUILD_CONFIG} CMAKE_C_FLAGS_${_BUILD_CONFIG})
-                string(REGEX REPLACE /MD /MT ${_BUILD_VARS} ${${_BUILD_VARS}})
-            endforeach()
-        endforeach()
-    endif()
-#endmacro()
 
 
 macro(cegui_add_library _NAME _SOURCES_VAR _HEADERS_VAR)
