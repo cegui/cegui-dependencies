@@ -12,9 +12,6 @@ cegui_add_library(${DEPNAME} SOURCES NONE)
 set_target_properties(${DEPNAME} PROPERTIES
     COMPILE_DEFINITIONS ZLIB_DLL)
 
-set_target_properties(${DEPNAME}_static PROPERTIES
-    COMPILE_DEFINITIONS CEGUI_NONE)
-
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD 
                        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../${_H_FILE}"
