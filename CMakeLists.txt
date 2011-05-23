@@ -82,4 +82,5 @@ add_subdirectory(src/zlib-1.2.5/CEGUI-BUILD)
 add_subdirectory(src/libpng-1.5.2/CEGUI-BUILD)
 add_subdirectory(src/jpeg-8c/CEGUI-BUILD)
 add_subdirectory(src/libmng-1.0.10/CEGUI-BUILD)
+add_subdirectory(src/tiff-3.9.5/CEGUI-BUILD)
 
