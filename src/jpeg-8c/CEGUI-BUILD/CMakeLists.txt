@@ -19,9 +19,6 @@ endif()
 
 cegui_add_library(${DEPNAME} SOURCES NONE)
 
-set_target_properties(${DEPNAME}_static PROPERTIES
-    COMPILE_DEFINITIONS PNG_NO_MMX_CODE)
-
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD 
                        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../${_H_FILE}"
