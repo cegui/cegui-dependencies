@@ -7,6 +7,12 @@ set(CMAKE_DEBUG_POSTFIX _d)
 
 cmake_dependent_option( CEGUI_MSVC_STATIC_RUNTIME "Specifies whether to the static runtime (/MT and /MTd) or the DLL runtime (/MD and /MDd)." FALSE "MSVC" FALSE )
 
+
+if (MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
+
+
 #macro(cegui_set_msvc_runtime_flags)
     if (CEGUI_MSVC_STATIC_RUNTIME)
         foreach(_BUILD_CONFIG DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
@@ -75,4 +81,5 @@ add_subdirectory(src/freetype-2.4.4/CEGUI-BUILD)
 add_subdirectory(src/zlib-1.2.5/CEGUI-BUILD)
 add_subdirectory(src/libpng-1.5.2/CEGUI-BUILD)
 add_subdirectory(src/jpeg-8c/CEGUI-BUILD)
+add_subdirectory(src/libmng-1.0.10/CEGUI-BUILD)
 
