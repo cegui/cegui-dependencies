@@ -7,8 +7,10 @@ set(HEADERS png.h pngconf.h)
 
 include_directories(../ ${CMAKE_BINARY_DIR}/include)
 
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/pnglibconf.h.prebuilt"
-                                                 "${CMAKE_CURRENT_SOURCE_DIR}/../pnglibconf.h")
+if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../pnglibconf.h")
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/pnglibconf.h.prebuilt"
+                                                     "${CMAKE_CURRENT_SOURCE_DIR}/../pnglibconf.h")
+endif()
 
 cegui_add_library(${DEPNAME} SOURCES NONE)
 

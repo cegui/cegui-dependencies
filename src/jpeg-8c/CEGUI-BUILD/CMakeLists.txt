@@ -12,7 +12,7 @@ set(HEADERS jerror.h jconfig.h jmorecfg.h jpeglib.h)
 
 include_directories(../)
 
-if (WIN32)
+if (WIN32 AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../jconfig.h")
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../jconfig.vc"
                                                      "${CMAKE_CURRENT_SOURCE_DIR}/../jconfig.h")
 endif()
