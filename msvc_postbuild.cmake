@@ -5,5 +5,7 @@ file(GLOB_RECURSE UNWANTED
     ${CMAKE_BINARY_DIR}/dependencies/*.in
     ${CMAKE_BINARY_DIR}/dependencies/Makefile*)
 
-file(REMOVE ${UNWANTED})
+if (UNWANTED)
+    file(REMOVE ${UNWANTED})
+endif()
 
