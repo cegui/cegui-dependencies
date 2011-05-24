@@ -72,13 +72,17 @@ endmacro()
 
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/include")
 
-add_subdirectory(src/expat-2.0.1/CEGUI-BUILD)
-add_subdirectory(src/freetype-2.4.4/CEGUI-BUILD)
 add_subdirectory(src/zlib-1.2.5/CEGUI-BUILD)
 add_subdirectory(src/libpng-1.5.2/CEGUI-BUILD)
 add_subdirectory(src/jpeg-8c/CEGUI-BUILD)
 add_subdirectory(src/libmng-1.0.10/CEGUI-BUILD)
 add_subdirectory(src/tiff-3.9.5/CEGUI-BUILD)
-add_subdirectory(src/lua-5.1.4/CEGUI-BUILD)
-add_subdirectory(src/SILLY/CEGUI-BUILD)
 
+add_subdirectory(src/freetype-2.4.4/CEGUI-BUILD)
+add_subdirectory(src/pcre-8.12/CEGUI-BUILD)
+
+add_subdirectory(src/lua-5.1.4/CEGUI-BUILD)
+
+add_subdirectory(src/expat-2.0.1/CEGUI-BUILD)
+
+add_subdirectory(src/SILLY/CEGUI-BUILD)
