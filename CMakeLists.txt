@@ -86,3 +86,4 @@ add_subdirectory(src/lua-5.1.4/CEGUI-BUILD)
 add_subdirectory(src/expat-2.0.1/CEGUI-BUILD)
 
 add_subdirectory(src/SILLY/CEGUI-BUILD)
+add_subdirectory(src/FreeImage-3.15.0/CEGUI-BUILD)
