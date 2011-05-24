@@ -18,3 +18,7 @@ foreach(_H_FILE ${HEADERS})
                                                         "${CMAKE_BINARY_DIR}/dependencies/include/${_H_FILE}")
 endforeach()
 
+add_custom_command(TARGET ${DEPNAME} POST_BUILD 
+                   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../README"
+                                                    "${CMAKE_BINARY_DIR}/dependencies/zlib-README.txt")
+

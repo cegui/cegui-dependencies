@@ -337,4 +337,11 @@ foreach(_H_FILE ${HEADERS})
                                                         "${CMAKE_BINARY_DIR}/dependencies/include/${_H_FILE}")
 endforeach()
 
+add_custom_command(TARGET ${DEPNAME} POST_BUILD 
+                   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../license-fi.txt"
+                                                    "${CMAKE_BINARY_DIR}/dependencies/freeimage-license-fi.txt")
+
+add_custom_command(TARGET ${DEPNAME} POST_BUILD 
+                   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../license-gpl.txt"
+                                                    "${CMAKE_BINARY_DIR}/dependencies/freeimage-license-gpl.txt")
 

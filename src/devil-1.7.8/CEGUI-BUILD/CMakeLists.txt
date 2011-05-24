@@ -40,3 +40,8 @@ set_target_properties(ILU_static PROPERTIES
 add_custom_command(TARGET IL POST_BUILD 
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/../include/IL"
                                                    "${CMAKE_BINARY_DIR}/dependencies/include/IL")
+
+add_custom_command(TARGET IL POST_BUILD 
+                   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../COPYING"
+                                                    "${CMAKE_BINARY_DIR}/dependencies/devil-license.txt")
+

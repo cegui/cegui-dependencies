@@ -19,6 +19,7 @@ foreach(_H_FILE ${HEADERS})
 endforeach()
 
 
-
-
+add_custom_command(TARGET ${DEPNAME} POST_BUILD 
+                   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE"
+                                                    "${CMAKE_BINARY_DIR}/dependencies/libmng-license.txt")
 
