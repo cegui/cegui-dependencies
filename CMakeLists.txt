@@ -93,3 +93,10 @@ add_subdirectory(src/devil-1.7.8/CEGUI-BUILD)
 
 add_subdirectory(src/freeglut-2.6.0/CEGUI-BUILD)
 
+
+
+add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
+    zlib libpng jpeg libmng libtiff freetype pcre lua expat xerces-c_3 SILLY FreeImage corona IL ILU freeglut)
+
+add_custom_command(TARGET POST_BUILD_CLEANUP COMMAND ${CMAKE_COMMAND} -P "${CMAKE_SOURCE_DIR}/msvc_postbuild.cmake")
+
