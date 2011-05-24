@@ -46,6 +46,14 @@
  * pragmas or to 1 to exclude library pragmas.
  * The default behavior depends on the compiler/platform.
  */
+/* Modified by the CEGUI project:
+ * Since the use of #pragma to perform linking is nothing short of an
+ * abomination; a horrible construct that makes it virtually impossible
+ * to really control what is going on, unless you instruct people on
+ * which preprocessor macros they /must/ use to /prevent/ the use of this
+ * rubbish, we have decided to remove all instance from this file - just
+ * to be on the safe side ;)
+ */
 #   ifndef FREEGLUT_LIB_PRAGMAS
 #       if ( defined(_MSC_VER) || defined(__WATCOMC__) ) && !defined(_WIN32_WCE)
 #           define FREEGLUT_LIB_PRAGMAS 1
@@ -66,11 +74,6 @@
 #       define FGAPI
 #       define FGAPIENTRY
 
-        /* Link with Win32 static freeglut lib */
-#       if FREEGLUT_LIB_PRAGMAS
-#           pragma comment (lib, "freeglut_static.lib")
-#       endif
-
 /* Windows shared library (DLL) */
 #   else
 
@@ -80,23 +83,10 @@
 #       else
 #           define FGAPI __declspec(dllimport)
 
-            /* Link with Win32 shared freeglut lib */
-#           if FREEGLUT_LIB_PRAGMAS
-#               pragma comment (lib, "freeglut.lib")
-#           endif
-
 #       endif
 
 #   endif
 
-/* Drag in other Windows libraries as required by FreeGLUT */
-#   if FREEGLUT_LIB_PRAGMAS
-#       pragma comment (lib, "glu32.lib")    /* link OpenGL Utility lib     */
-#       pragma comment (lib, "opengl32.lib") /* link Microsoft OpenGL lib   */
-#       pragma comment (lib, "gdi32.lib")    /* link Windows GDI lib        */
-#       pragma comment (lib, "winmm.lib")    /* link Windows MultiMedia lib */
-#       pragma comment (lib, "user32.lib")   /* link Windows user lib       */
-#   endif
 
 #else
 

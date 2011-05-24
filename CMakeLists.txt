@@ -88,4 +88,7 @@ add_subdirectory(src/expat-2.0.1/CEGUI-BUILD)
 add_subdirectory(src/SILLY/CEGUI-BUILD)
 add_subdirectory(src/FreeImage-3.15.0/CEGUI-BUILD)
 add_subdirectory(src/corona-1.0.2/CEGUI-BUILD)
+add_subdirectory(src/devil-1.7.8/CEGUI-BUILD)
+
+add_subdirectory(src/freeglut-2.6.0/CEGUI-BUILD)
 
