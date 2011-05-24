@@ -6,7 +6,7 @@ list(REMOVE_ITEM SOURCES ../pnggccrd.c ../pngvcrd.c ../pngtest.c)
 
 set(HEADERS png.h pngconf.h)
 
-include_directories(../ ${CMAKE_BINARY_DIR}/include)
+include_directories(../ ${CMAKE_BINARY_DIR}/dependencies/include)
 
 cegui_add_library(${DEPNAME} SOURCES NONE)
 
@@ -24,7 +24,7 @@ set_target_properties(${DEPNAME}_static PROPERTIES
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD 
                        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../${_H_FILE}"
-                                                        "${CMAKE_BINARY_DIR}/include/${_H_FILE}")
+                                                        "${CMAKE_BINARY_DIR}/dependencies/include/${_H_FILE}")
 endforeach()
 
 

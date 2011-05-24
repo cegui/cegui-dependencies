@@ -18,4 +18,4 @@ set_target_properties(${DEPNAME}_static PROPERTIES
 
 add_custom_command(TARGET ${DEPNAME} POST_BUILD 
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/../include/GL"
-                                                   "${CMAKE_BINARY_DIR}/include/GL")
+                                                   "${CMAKE_BINARY_DIR}/dependencies/include/GL")

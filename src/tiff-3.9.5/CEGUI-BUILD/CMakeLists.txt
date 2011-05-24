@@ -16,7 +16,7 @@ set(HEADERS
     tiffio.h
     tiffvers.h)
 
-include_directories(../ "${CMAKE_BINARY_DIR}/include")
+include_directories(../ "${CMAKE_BINARY_DIR}/dependencies/include")
 
 if (MSVC)
     if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tiffconf.h")
@@ -42,6 +42,6 @@ set_target_properties(${DEPNAME}_static PROPERTIES COMPILE_DEFINITIONS
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD 
                        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/${_H_FILE}"
-                                                        "${CMAKE_BINARY_DIR}/include/${_H_FILE}")
+                                                        "${CMAKE_BINARY_DIR}/dependencies/include/${_H_FILE}")
 endforeach()
 

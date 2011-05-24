@@ -4,7 +4,7 @@ file(GLOB SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "../src/*.cpp")
 file(GLOB SOURCES_LOADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "../src/loaders/*.cpp")
 list(APPEND SOURCES ${SOURCES_LOADERS})
 
-include_directories(../include "${CMAKE_BINARY_DIR}/include")
+include_directories(../include "${CMAKE_BINARY_DIR}/dependencies/include")
 
 cegui_add_library(${DEPNAME} SOURCES HEADERS)
 
@@ -20,6 +20,6 @@ set_target_properties(${DEPNAME}_static PROPERTIES
 
 add_custom_command(TARGET ${DEPNAME} POST_BUILD 
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/../include/"
-                                                   "${CMAKE_BINARY_DIR}/include")
+                                                   "${CMAKE_BINARY_DIR}/dependencies/include")
 
 

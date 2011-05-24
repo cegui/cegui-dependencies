@@ -22,7 +22,7 @@ cegui_add_library(${DEPNAME} SOURCES NONE)
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD 
                        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../${_H_FILE}"
-                                                        "${CMAKE_BINARY_DIR}/include/${_H_FILE}")
+                                                        "${CMAKE_BINARY_DIR}/dependencies/include/${_H_FILE}")
 endforeach()
 
 

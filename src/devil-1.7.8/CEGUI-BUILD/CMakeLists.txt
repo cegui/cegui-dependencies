@@ -8,7 +8,7 @@ file(GLOB IL_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 include_directories(
 	"../include"
 	"../src-IL/include"
-    ${CMAKE_BINARY_DIR}/include)
+    ${CMAKE_BINARY_DIR}/dependencies/include)
 
 cegui_add_library(IL IL_SOURCES NONE)
 
@@ -39,4 +39,4 @@ set_target_properties(ILU_static PROPERTIES
 
 add_custom_command(TARGET IL POST_BUILD 
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/../include/IL"
-                                                   "${CMAKE_BINARY_DIR}/include/IL")
+                                                   "${CMAKE_BINARY_DIR}/dependencies/include/IL")

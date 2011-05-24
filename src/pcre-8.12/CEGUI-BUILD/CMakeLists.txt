@@ -3,7 +3,7 @@ set(DEPNAME pcre)
 file(GLOB SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "../pcre_*.c")
 set(HEADERS pcre.h)
 
-include_directories(../ ${CMAKE_BINARY_DIR}/include)
+include_directories(../ ${CMAKE_BINARY_DIR}/dependencies/include)
 
 if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../pcre.h")
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../pcre.h.generic"
@@ -41,6 +41,6 @@ set_target_properties(${DEPNAME}_static PROPERTIES
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD 
                        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../${_H_FILE}"
-                                                        "${CMAKE_BINARY_DIR}/include/${_H_FILE}")
+                                                        "${CMAKE_BINARY_DIR}/dependencies/include/${_H_FILE}")
 endforeach()
 
