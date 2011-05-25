@@ -46,7 +46,7 @@ set(SOURCES
 ../src/psnames/psnames.c)
 
 if (APPLE)
-#../src/base/ftmac.c
+#    list(APPEND SOURCES ../src/base/ftmac.c)
 endif()
 
 set(HEADERS )
@@ -59,10 +59,14 @@ set_target_properties(${DEPNAME} PROPERTIES
     COMPILE_DEFINITIONS FT2_BUILD_LIBRARY
 	COMPILE_DEFINITIONS_DEBUG "FT_DEBUG_LEVEL_ERROR;FT_DEBUG_LEVEL_TRACE")
 
+if (APPLE)
+    set_target_properties(${DEPNAME} PROPERTIES
+        LINK_FLAGS "-framework Carbon")
+endif()
+
 set_target_properties(${DEPNAME}_static PROPERTIES
     COMPILE_DEFINITIONS FT2_BUILD_LIBRARY
 	COMPILE_DEFINITIONS_DEBUG "FT_DEBUG_LEVEL_ERROR;FT_DEBUG_LEVEL_TRACE")
-
 
 add_custom_command(TARGET ${DEPNAME} POST_BUILD 
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/../include/"

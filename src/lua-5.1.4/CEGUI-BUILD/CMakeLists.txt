@@ -9,8 +9,10 @@ include_directories(../src)
 
 cegui_add_library(${DEPNAME} SOURCES NONE)
 
-set_target_properties(${DEPNAME} PROPERTIES
-    DEFINE_SYMBOL LUA_BUILD_AS_DLL)
+if (WIN32)
+    set_target_properties(${DEPNAME} PROPERTIES
+        DEFINE_SYMBOL LUA_BUILD_AS_DLL)
+endif()
 
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD 

@@ -1,8 +1,11 @@
 set(DEPNAME libpng)
 
 file(GLOB SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "../png*.c")
-list(APPEND SOURCES ../scripts/pngwin.def)
 list(REMOVE_ITEM SOURCES ../pnggccrd.c ../pngvcrd.c ../pngtest.c)
+
+if (WIN32)
+    list(APPEND SOURCES ../scripts/pngwin.def)
+endif()
 
 set(HEADERS png.h pngconf.h)
 

@@ -3,13 +3,23 @@ set(DEPNAME expat)
 set(SOURCES ../lib/libexpat.def ../lib/xmlrole.c ../lib/xmltok.c ../lib/xmlparse.c)
 set(HEADERS expat.h expat_external.h)
 
-add_definitions(-DCOMPILED_FROM_DSP)
+if(WIN32)
+    add_definitions(-DCOMPILED_FROM_DSP)
+endif()
 
 cegui_add_library(${DEPNAME} SOURCES NONE)
 
-
 set_target_properties(${DEPNAME} PROPERTIES
     DEFINE_SYMBOL EXPAT_EXPORTS)
+
+if (NOT WIN32)
+    set_target_properties(${DEPNAME} PROPERTIES
+        COMPILE_DEFINITIONS HAVE_MEMMOVE)
+
+    set_target_properties(${DEPNAME}_static PROPERTIES
+        COMPILE_DEFINITIONS HAVE_MEMMOVE)
+
+endif()
 
 foreach(_H_FILE ${HEADERS})
 add_custom_command(TARGET ${DEPNAME} POST_BUILD 
