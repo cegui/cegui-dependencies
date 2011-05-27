@@ -18,26 +18,37 @@ set(HEADERS
 
 include_directories(../ "${CMAKE_BINARY_DIR}/dependencies/include")
 
-if (MSVC)
-    if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tiffconf.h")
+if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tiffconf.h")
+    if (MSVC)
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tiffconf.vc.h"
                                                          "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tiffconf.h")
+    elseif (APPLE)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tiffconf.osx32intel.h"
+                                                         "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tiffconf.h")
     endif()
-    if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tif_config.h")
+endif()
+
+if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tif_config.h")
+    if (MSVC)
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tif_config.vc.h"
+                                                         "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tif_config.h")
+    elseif (APPLE)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tif_config.osx32intel.h"
                                                          "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tif_config.h")
     endif()
 endif()
 
 cegui_add_library(${DEPNAME} SOURCES NONE)
 
-target_link_libraries(${DEPNAME} zlib)
+target_link_libraries(${DEPNAME} zlib jpeg)
 
-set_target_properties(${DEPNAME} PROPERTIES COMPILE_DEFINITIONS
-    "USE_WIN_CRT_LIB=1;WINMODE_CONSOLE=1;CCITT_SUPPORT=1;PACKBITS_SUPPORT=1;LZW_SUPPORT=1;THUNDER_SUPPORT=1;NEXT_SUPPORT=1;LOGLUV_SUPPORT=1;ZIP_SUPPORT=1;STRIPCHOP_SUPPORT=1;STRIP_SIZE_DEFAULT=8192;EXTRASAMPLE_AS_ALPHA_SUPPORT=1;CHECK_JPEG_YCBCR_SUBSAMPLING=1")
+if (WIN32)
+    set_target_properties(${DEPNAME} PROPERTIES COMPILE_DEFINITIONS
+        "USE_WIN_CRT_LIB=1;WINMODE_CONSOLE=1;CCITT_SUPPORT=1;PACKBITS_SUPPORT=1;LZW_SUPPORT=1;THUNDER_SUPPORT=1;NEXT_SUPPORT=1;LOGLUV_SUPPORT=1;ZIP_SUPPORT=1;STRIPCHOP_SUPPORT=1;STRIP_SIZE_DEFAULT=8192;EXTRASAMPLE_AS_ALPHA_SUPPORT=1;CHECK_JPEG_YCBCR_SUBSAMPLING=1")
 
-set_target_properties(${DEPNAME}_static PROPERTIES COMPILE_DEFINITIONS
-    "USE_WIN_CRT_LIB=1;WINMODE_CONSOLE=1;CCITT_SUPPORT=1;PACKBITS_SUPPORT=1;LZW_SUPPORT=1;THUNDER_SUPPORT=1;NEXT_SUPPORT=1;LOGLUV_SUPPORT=1;ZIP_SUPPORT=1;STRIPCHOP_SUPPORT=1;STRIP_SIZE_DEFAULT=8192;EXTRASAMPLE_AS_ALPHA_SUPPORT=1;CHECK_JPEG_YCBCR_SUBSAMPLING=1")
+    set_target_properties(${DEPNAME}_static PROPERTIES COMPILE_DEFINITIONS
+        "USE_WIN_CRT_LIB=1;WINMODE_CONSOLE=1;CCITT_SUPPORT=1;PACKBITS_SUPPORT=1;LZW_SUPPORT=1;THUNDER_SUPPORT=1;NEXT_SUPPORT=1;LOGLUV_SUPPORT=1;ZIP_SUPPORT=1;STRIPCHOP_SUPPORT=1;STRIP_SIZE_DEFAULT=8192;EXTRASAMPLE_AS_ALPHA_SUPPORT=1;CHECK_JPEG_YCBCR_SUBSAMPLING=1")
+endif()
 
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD 

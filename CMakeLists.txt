@@ -80,29 +80,31 @@ endif()
 add_subdirectory(src/zlib-1.2.5/CEGUI-BUILD)
 add_subdirectory(src/libpng-1.4.7/CEGUI-BUILD)
 add_subdirectory(src/jpeg-8c/CEGUI-BUILD)
-#add_subdirectory(src/libmng-1.0.10/CEGUI-BUILD)
-#add_subdirectory(src/tiff-3.9.5/CEGUI-BUILD)
+add_subdirectory(src/libmng-1.0.10/CEGUI-BUILD)
+add_subdirectory(src/tiff-3.9.5/CEGUI-BUILD)
 
-#add_subdirectory(src/freetype-2.4.4/CEGUI-BUILD)
-#add_subdirectory(src/pcre-8.12/CEGUI-BUILD)
+add_subdirectory(src/freetype-2.4.4/CEGUI-BUILD)
+add_subdirectory(src/pcre-8.12/CEGUI-BUILD)
 
-#add_subdirectory(src/lua-5.1.4/CEGUI-BUILD)
+add_subdirectory(src/lua-5.1.4/CEGUI-BUILD)
 
-#add_subdirectory(src/expat-2.0.1/CEGUI-BUILD)
-#add_subdirectory(src/xerces-c-3.1.1/CEGUI-BUILD)
+add_subdirectory(src/expat-2.0.1/CEGUI-BUILD)
+add_subdirectory(src/xerces-c-3.1.1/CEGUI-BUILD)
 
-#add_subdirectory(src/SILLY/CEGUI-BUILD)
+add_subdirectory(src/SILLY/CEGUI-BUILD)
 #add_subdirectory(src/FreeImage-3.15.0/CEGUI-BUILD)
-#add_subdirectory(src/corona-1.0.2/CEGUI-BUILD)
-#add_subdirectory(src/devil-1.7.8/CEGUI-BUILD)
+add_subdirectory(src/corona-1.0.2/CEGUI-BUILD)
+add_subdirectory(src/devil-1.7.8/CEGUI-BUILD)
 
 # We use the OS X GLUT on Apple.
 if (NOT APPLE)
     add_subdirectory(src/freeglut-2.6.0/CEGUI-BUILD)
+    set(FreeGLUTDep freeglut)
 endif()
 
-#add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
-#    zlib libpng jpeg libmng libtiff freetype pcre lua expat xerces-c_3 SILLY FreeImage corona IL ILU freeglut ${Effects11Dep})
+add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
+    zlib libpng jpeg libmng libtiff freetype pcre lua expat xerces-c_3 SILLY FreeImage corona IL ILU ${FreeGLUTDep} ${Effects11Dep})
 
-#add_custom_command(TARGET POST_BUILD_CLEANUP COMMAND ${CMAKE_COMMAND} -P "${CMAKE_SOURCE_DIR}/msvc_postbuild.cmake")
-
+if (MSVC)
+    add_custom_command(TARGET POST_BUILD_CLEANUP COMMAND ${CMAKE_COMMAND} -P "${CMAKE_SOURCE_DIR}/msvc_postbuild.cmake")
+endif()
