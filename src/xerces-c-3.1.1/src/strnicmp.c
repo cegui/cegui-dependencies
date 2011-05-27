@@ -20,7 +20,9 @@
  */
 
 #include "strnicmp.h"
+/*
 #include "config.h"
+*/
 
 #if HAVE_STRING_H
 #	include <string.h>

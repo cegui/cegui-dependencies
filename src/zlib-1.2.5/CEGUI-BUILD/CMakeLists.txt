@@ -10,7 +10,16 @@ include_directories("../")
 cegui_add_library(${DEPNAME} SOURCES NONE)
 
 set_target_properties(${DEPNAME} PROPERTIES
-    COMPILE_DEFINITIONS ZLIB_DLL)
+    DEFINE_SYMBOL ZLIB_DLL)
+
+if (APPLE)
+    set_target_properties(${DEPNAME} PROPERTIES
+        COMPILE_DEFINITIONS Z_HAVE_UNISTD_H)
+
+    set_target_properties(${DEPNAME}_static PROPERTIES
+        COMPILE_DEFINITIONS Z_HAVE_UNISTD_H)
+endif()
+
 
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD 

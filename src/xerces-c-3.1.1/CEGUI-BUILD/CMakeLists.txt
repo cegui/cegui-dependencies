@@ -1,6 +1,6 @@
 set(DEPNAME xerces-c_3)
 
-file(GLOB SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+set(SOURCES
     ../src/xercesc/util/Base64.cpp
     ../src/xercesc/util/BinFileInputStream.cpp
     ../src/xercesc/util/BinInputStream.cpp
@@ -48,12 +48,8 @@ file(GLOB SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     ../src/xercesc/util/XMLUTF8Transcoder.cpp
     ../src/xercesc/util/XMLWin1252Transcoder.cpp
     ../src/xercesc/util/MsgLoaders/InMemory/InMemMsgLoader.cpp
-    ../src/xercesc/util/MsgLoaders/Win32/Win32MsgLoader.cpp
 #    ../src/xercesc/util/Transcoders/ICU/ICUTransService.cpp
-    ../src/xercesc/util/Transcoders/Win32/Win32TransService.cpp
     ../src/xercesc/util/NetAccessors/BinHTTPInputStreamCommon.cpp
-    ../src/xercesc/util/NetAccessors/WinSock/BinHTTPURLInputStream.cpp
-    ../src/xercesc/util/NetAccessors/WinSock/WinSockNetAccessor.cpp
     ../src/xercesc/util/regx/ASCIIRangeFactory.cpp
     ../src/xercesc/util/regx/BlockRangeFactory.cpp
     ../src/xercesc/util/regx/BMPattern.cpp
@@ -78,8 +74,6 @@ file(GLOB SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     ../src/xercesc/util/regx/UnionToken.cpp
     ../src/xercesc/util/regx/XMLRangeFactory.cpp
     ../src/xercesc/util/regx/XMLUniCharacter.cpp
-    ../src/xercesc/util/FileManagers/WindowsFileMgr.cpp
-    ../src/xercesc/util/MutexManagers/WindowsMutexMgr.cpp
     ../src/xercesc/framework/LocalFileFormatTarget.cpp
     ../src/xercesc/framework/LocalFileInputSource.cpp
     ../src/xercesc/framework/MemBufFormatTarget.cpp
@@ -534,7 +528,6 @@ set(HEADERS
     xercesc/util/DefaultPanicHandler.hpp
     xercesc/util/EmptyStackException.hpp
     xercesc/util/EncodingValidator.hpp
-    xercesc/util/FileManagers/WindowsFileMgr.hpp
     xercesc/util/FlagJanitor.c
     xercesc/util/FlagJanitor.hpp
     xercesc/util/Hash2KeysSetOf.c
@@ -552,15 +545,10 @@ set(HEADERS
     xercesc/util/KeyValuePair.hpp
     xercesc/util/KVStringPair.hpp
     xercesc/util/LogicalPath.c
-    xercesc/util/MsgLoaders/Win32/resource.h
-    xercesc/util/MsgLoaders/Win32/Win32MsgLoader.hpp
     xercesc/util/Mutexes.hpp
-    xercesc/util/MutexManagers/WindowsMutexMgr.hpp
     xercesc/util/NameIdPool.c
     xercesc/util/NameIdPool.hpp
     xercesc/util/NetAccessors/BinHTTPInputStreamCommon.hpp
-    xercesc/util/NetAccessors/WinSock/BinHTTPURLInputStream.hpp
-    xercesc/util/NetAccessors/WinSock/WinSockNetAccessor.hpp
     xercesc/util/NoSuchElementException.hpp
     xercesc/util/NullPointerException.hpp
     xercesc/util/NumberFormatException.hpp
@@ -616,7 +604,6 @@ set(HEADERS
     xercesc/util/SecurityManager.hpp
     xercesc/util/StringPool.hpp
     xercesc/util/SynchronizedStringPool.hpp
-    xercesc/util/Transcoders/Win32/Win32TransService.hpp
     xercesc/util/TranscodingException.hpp
     xercesc/util/TransENameMap.c
     xercesc/util/TransENameMap.hpp
@@ -775,21 +762,76 @@ set(HEADERS
     xercesc/xinclude/XIncludeUtils.hpp
 )
 
+if (WIN32)
+    list(APPEND SOURCES
+        ../src/xercesc/util/FileManagers/WindowsFileMgr.cpp
+        ../src/xercesc/util/MsgLoaders/Win32/Win32MsgLoader.cpp
+        ../src/xercesc/util/MutexManagers/WindowsMutexMgr.cpp
+        ../src/xercesc/util/NetAccessors/WinSock/BinHTTPURLInputStream.cpp
+        ../src/xercesc/util/NetAccessors/WinSock/WinSockNetAccessor.cpp
+        ../src/xercesc/util/Transcoders/Win32/Win32TransService.cpp)
+
+    list(APPEND HEADERS
+        xercesc/util/FileManagers/WindowsFileMgr.hpp
+        xercesc/util/MsgLoaders/Win32/resource.h
+        xercesc/util/MsgLoaders/Win32/Win32MsgLoader.hpp
+        xercesc/util/MutexManagers/WindowsMutexMgr.hpp
+        xercesc/util/NetAccessors/WinSock/BinHTTPURLInputStream.hpp
+        xercesc/util/NetAccessors/WinSock/WinSockNetAccessor.hpp
+        xercesc/util/Transcoders/Win32/Win32TransService.hpp)
+endif()
+
+if (APPLE)
+    list(APPEND SOURCES
+        ../src/xercesc/util/FileManagers/PosixFileMgr.cpp
+        ../src/xercesc/util/MutexManagers/PosixMutexMgr.cpp
+        ../src/xercesc/util/NetAccessors/MacOSURLAccessCF/MacOSURLAccessCF.cpp
+        ../src/xercesc/util/NetAccessors/MacOSURLAccessCF/URLAccessCFBinInputStream.cpp
+        ../src/xercesc/util/Transcoders/MacOSUnicodeConverter/MacOSUnicodeConverter.cpp
+        ../src/stricmp.c
+        ../src/strnicmp.c)
+
+    list(APPEND HEADERS
+        xercesc/util/FileManagers/PosixFileMgr.hpp
+        xercesc/util/MutexManagers/PosixMutexMgr.hpp
+        xercesc/util/NetAccessors/MacOSURLAccessCF/MacOSURLAccessCF.hpp
+        xercesc/util/NetAccessors/MacOSURLAccessCF/URLAccessCFBinInputStream.hpp
+        xercesc/util/Transcoders/MacOSUnicodeConverter/MacOSUnicodeConverter.hpp)
+endif()
+
+
+
 include_directories(
     ../src
 )
 
-if (WIN32 AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.hpp")
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.msvc.hpp"
-                                                     "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.hpp")
+if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.hpp")
+    if (WIN32)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.msvc.hpp"
+                                                         "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.hpp")
+    elseif(APPLE)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.osx32intel.hpp"
+                                                         "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.hpp")
+    endif()
 endif()
 cegui_add_library(${DEPNAME} SOURCES NONE)
 
-set_target_properties(${DEPNAME} PROPERTIES
-    COMPILE_DEFINITIONS "XERCES_BUILDING_LIBRARY;XERCES_USE_TRANSCODER_WINDOWS;XERCES_USE_WIN32_MSGLOADER;XERCES_USE_NETACCESSOR_WINSOCK;XERCES_USE_FILEMGR_WINDOWS;XERCES_USE_MUTEXMGR_WINDOWS;XERCES_PATH_DELIMITER_BACKSLASH;HAVE_STRICMP;HAVE_STRNICMP;HAVE_LIMITS_H;HAVE_SYS_TIMEB_H;HAVE_FTIME;HAVE_WCSUPR;HAVE_WCSLWR;HAVE_WCSICMP;HAVE_WCSNICMP")
+if (WIN32)
+    set_target_properties(${DEPNAME} PROPERTIES
+        COMPILE_DEFINITIONS "XERCES_BUILDING_LIBRARY;XERCES_USE_TRANSCODER_WINDOWS;XERCES_USE_WIN32_MSGLOADER;XERCES_USE_NETACCESSOR_WINSOCK;XERCES_USE_FILEMGR_WINDOWS;XERCES_USE_MUTEXMGR_WINDOWS;XERCES_PATH_DELIMITER_BACKSLASH;HAVE_STRICMP;HAVE_STRNICMP;HAVE_LIMITS_H;HAVE_SYS_TIMEB_H;HAVE_FTIME;HAVE_WCSUPR;HAVE_WCSLWR;HAVE_WCSICMP;HAVE_WCSNICMP")
 
-set_target_properties(${DEPNAME}_static PROPERTIES
-    COMPILE_DEFINITIONS "XERCES_STATIC_LIBRARY;XERCES_BUILDING_LIBRARY;XERCES_USE_TRANSCODER_WINDOWS;XERCES_USE_WIN32_MSGLOADER;XERCES_USE_NETACCESSOR_WINSOCK;XERCES_USE_FILEMGR_WINDOWS;XERCES_USE_MUTEXMGR_WINDOWS;XERCES_PATH_DELIMITER_BACKSLASH;HAVE_STRICMP;HAVE_STRNICMP;HAVE_LIMITS_H;HAVE_SYS_TIMEB_H;HAVE_FTIME;HAVE_WCSUPR;HAVE_WCSLWR;HAVE_WCSICMP;HAVE_WCSNICMP")
+    set_target_properties(${DEPNAME}_static PROPERTIES
+        COMPILE_DEFINITIONS "XERCES_STATIC_LIBRARY;XERCES_BUILDING_LIBRARY;XERCES_USE_TRANSCODER_WINDOWS;XERCES_USE_WIN32_MSGLOADER;XERCES_USE_NETACCESSOR_WINSOCK;XERCES_USE_FILEMGR_WINDOWS;XERCES_USE_MUTEXMGR_WINDOWS;XERCES_PATH_DELIMITER_BACKSLASH;HAVE_STRICMP;HAVE_STRNICMP;HAVE_LIMITS_H;HAVE_SYS_TIMEB_H;HAVE_FTIME;HAVE_WCSUPR;HAVE_WCSLWR;HAVE_WCSICMP;HAVE_WCSNICMP")
+endif()
+
+if (APPLE)
+    set_target_properties(${DEPNAME} PROPERTIES
+        COMPILE_DEFINITIONS "XERCES_BUILDING_LIBRARY;XERCES_USE_TRANSCODER_MACOSUNICODECONVERTER;XERCES_USE_MSGLOADER_INMEMORY;XERCES_USE_NETACCESSOR_CFURL;XERCES_USE_FILEMGR_POSIX;XERCES_USE_MUTEXMGR_POSIX;HAVE_CORESERVICES_CORESERVICES_H;HAVE_LIMITS_H;HAVE_SYS_TIMEB_H;HAVE_FTIME;HAVE_STRNCASECMP=1;HAVE_STRCASECMP=1;HAVE_STRING_H=1;HAVE_STRINGS_H=1"
+        LINK_FLAGS "-framework Carbon")
+
+    set_target_properties(${DEPNAME}_static PROPERTIES
+        COMPILE_DEFINITIONS "XERCES_USE_TRANSCODER_MACOSUNICODECONVERTER;XERCES_USE_MSGLOADER_INMEMORY;XERCES_USE_NETACCESSOR_CFURL;XERCES_USE_FILEMGR_POSIX;XERCES_USE_MUTEXMGR_POSIX;HAVE_CORESERVICES_CORESERVICES_H;HAVE_LIMITS_H;HAVE_SYS_TIMEB_H;HAVE_FTIME;HAVE_STRNCASECMP=1;HAVE_STRCASECMP=1;HAVE_STRING_H=1;HAVE_STRINGS_H=1")
+endif()
 
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD 
