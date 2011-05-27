@@ -12,9 +12,14 @@ set(HEADERS jerror.h jconfig.h jmorecfg.h jpeglib.h)
 
 include_directories(../)
 
-if (WIN32 AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../jconfig.h")
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../jconfig.vc"
-                                                     "${CMAKE_CURRENT_SOURCE_DIR}/../jconfig.h")
+if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../jconfig.h")
+    if (WIN32)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../jconfig.vc"
+                                                        "${CMAKE_CURRENT_SOURCE_DIR}/../jconfig.h")
+    else()
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../jconfig.mac"
+                                                        "${CMAKE_CURRENT_SOURCE_DIR}/../jconfig.h")
+    endif()
 endif()
 
 cegui_add_library(${DEPNAME} SOURCES NONE)
