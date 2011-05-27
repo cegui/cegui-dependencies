@@ -1,11 +1,20 @@
 cmake_minimum_required(VERSION 2.8)
 include(CMakeDependentOption)
 
+if (APPLE)
+    set( CMAKE_OSX_ARCHITECTURES i386 CACHE STRING "Build architectures for Mac OS X" )
+    set( CMAKE_BUILD_TYPE Release CACHE STRING "Sets the configuration to build (Release, Debug, etc...)")
+endif()
+
 project(CEGUI-DEPS)
 
 set(CMAKE_DEBUG_POSTFIX _d)
 
 cmake_dependent_option( CEGUI_MSVC_STATIC_RUNTIME "Specifies whether to the static runtime (/MT and /MTd) or the DLL runtime (/MD and /MDd)." FALSE "MSVC" FALSE )
+
+if (APPLE)
+    set(CEGUI_APPLE_DYLIB_INSTALL_PATH "@executable_path/../Frameworks" CACHE STRING "Specifies the install path for generated dylibs." )
+endif()
 
 if (CEGUI_MSVC_STATIC_RUNTIME)
     foreach(_BUILD_CONFIG DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
@@ -42,6 +51,12 @@ macro(cegui_add_library _NAME _SOURCES_VAR _HEADERS_VAR)
         RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/dependencies/bin"
         RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/dependencies/bin")
 
+    if (APPLE)
+        set_target_properties(${_NAME} PROPERTIES
+            INSTALL_NAME_DIR ${CEGUI_APPLE_DYLIB_INSTALL_PATH}
+            BUILD_WITH_INSTALL_RPATH TRUE
+        )
+    endif()
 
     add_library(${_NAME}_static STATIC ${${_SOURCES_VAR}} ${${_HEADERS_VAR}})
 
