@@ -14,7 +14,17 @@ Certain source files are also modified:
 * FreeGLUT was modified to remove the #pragma use that (may) auto-link to libs
   when using MSVC.  Having been bitten by this previously, I was taking no
   chances this time around :)
+* Some packages contain additional config header files which we copy into place
+  for OS X, this is done to specify pre-configured settings and replaces an
+  invocation of some ./configure script (or similar).
 
-Except the DevIL patch, all other modified files include a note where CEGUI
-modifications were made.
+There may be other modifications not explicitly mentioned here, most are
+identified in the original files by way of a comment containing "CEGUI"
+somewhere, though it is possible - or even likely - that some modifications
+are missing such identification, and this notification should suffice to
+say that these libs are /not/ the original code - to guarantee you're using
+the original, umodified, code you should download your own copies of the
+original source and perform your own build.
+
+28th May 2011, The CEGUI Project.
 
