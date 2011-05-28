@@ -19,6 +19,10 @@ endif()
 
 target_link_libraries(IL libpng libmng libtiff jpeg)
 
+# this is needed because the headers for these deps are only copied as part of
+# the shared build
+add_dependencies(IL_static libpng libmng libtiff jpeg)
+
 set_target_properties(IL_static PROPERTIES
     COMPILE_DEFINITIONS IL_STATIC_LIB)
 

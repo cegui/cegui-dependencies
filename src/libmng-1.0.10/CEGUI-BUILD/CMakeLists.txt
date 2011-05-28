@@ -12,6 +12,10 @@ set_target_properties(${DEPNAME} PROPERTIES DEFINE_SYMBOL MNG_BUILD_DLL)
 
 target_link_libraries(${DEPNAME} zlib jpeg)
 
+# this is needed because the headers for these deps are only copied as part of
+# the shared build
+add_dependencies(${DEPNAME}_static zlib jpeg)
+
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD 
                        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../${_H_FILE}"

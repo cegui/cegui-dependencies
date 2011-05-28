@@ -42,6 +42,10 @@ cegui_add_library(${DEPNAME} SOURCES NONE)
 
 target_link_libraries(${DEPNAME} zlib jpeg)
 
+# this is needed because the headers for these deps are only copied as part of
+# the shared build
+add_dependencies(${DEPNAME}_static zlib jpeg)
+
 if (WIN32)
     set_target_properties(${DEPNAME} PROPERTIES COMPILE_DEFINITIONS
         "USE_WIN_CRT_LIB=1;WINMODE_CONSOLE=1;CCITT_SUPPORT=1;PACKBITS_SUPPORT=1;LZW_SUPPORT=1;THUNDER_SUPPORT=1;NEXT_SUPPORT=1;LOGLUV_SUPPORT=1;ZIP_SUPPORT=1;STRIPCHOP_SUPPORT=1;STRIP_SIZE_DEFAULT=8192;EXTRASAMPLE_AS_ALPHA_SUPPORT=1;CHECK_JPEG_YCBCR_SUBSAMPLING=1")

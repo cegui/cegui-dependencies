@@ -15,6 +15,10 @@ cegui_add_library(${DEPNAME} SOURCES NONE)
 
 target_link_libraries(${DEPNAME} libpng jpeg)
 
+# this is needed because the headers for these deps are only copied as part of
+# the shared build
+add_dependencies(${DEPNAME}_static libpng jpeg)
+
 set_target_properties(${DEPNAME} PROPERTIES
     DEFINE_SYMBOL CORONA_EXPORTS)
 

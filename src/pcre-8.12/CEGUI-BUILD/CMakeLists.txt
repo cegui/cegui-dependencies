@@ -34,6 +34,9 @@ set_target_properties(${DEPNAME} PROPERTIES
 
 target_link_libraries(${DEPNAME} zlib)
 
+# this is needed because the headers for zlib are only copied as part of
+# the shared build
+add_dependencies(${DEPNAME}_static zlib)
 
 set_target_properties(${DEPNAME}_static PROPERTIES
     COMPILE_DEFINITIONS "PCRE_STATIC;HAVE_WINDOWS_H;HAVE_ZLIB_H;SUPPORT_UTF8;HAVE_CONFIG_H;HAVE_STDINT_H=0;HAVE_INTTYPES_H=0")

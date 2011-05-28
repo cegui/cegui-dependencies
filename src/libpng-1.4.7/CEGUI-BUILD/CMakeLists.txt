@@ -27,6 +27,10 @@ set_target_properties(${DEPNAME} PROPERTIES
 
 target_link_libraries(${DEPNAME} zlib)
 
+# this is needed because the headers for zlib are only copied as part of
+# the shared build
+add_dependencies(${DEPNAME}_static zlib)
+
 set_target_properties(${DEPNAME}_static PROPERTIES
     COMPILE_DEFINITIONS_DEBUG "PNG_DEBUG=1"
     COMPILE_DEFINITIONS PNG_NO_MMX_CODE)

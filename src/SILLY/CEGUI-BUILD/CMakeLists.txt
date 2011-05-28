@@ -10,6 +10,10 @@ cegui_add_library(${DEPNAME} SOURCES HEADERS)
 
 target_link_libraries(${DEPNAME} libpng jpeg)
 
+# this is needed because the headers for these deps are only copied as part of
+# the shared build
+add_dependencies(${DEPNAME}_static libpng jpeg)
+
 set_target_properties(${DEPNAME} PROPERTIES
     COMPILE_DEFINITIONS "SILLY_HAVE_JPG;SILLY_HAVE_PNG"
 	COMPILE_DEFINITIONS_DEBUG "SILLY_OPT_DEBUG")
