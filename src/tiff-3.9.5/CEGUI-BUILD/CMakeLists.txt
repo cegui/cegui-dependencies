@@ -19,7 +19,7 @@ set(HEADERS
 include_directories(../ "${CMAKE_BINARY_DIR}/dependencies/include")
 
 if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tiffconf.h")
-    if (MSVC)
+	if (WIN32)
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tiffconf.vc.h"
                                                          "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tiffconf.h")
     elseif (APPLE)
@@ -29,7 +29,7 @@ if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tiffconf.h")
 endif()
 
 if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tif_config.h")
-    if (MSVC)
+	if (WIN32)
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tif_config.vc.h"
                                                          "${CMAKE_CURRENT_SOURCE_DIR}/../libtiff/tif_config.h")
     elseif (APPLE)

@@ -85,40 +85,148 @@ macro(cegui_add_library _NAME _SOURCES_VAR _HEADERS_VAR)
 
 endmacro()
 
+cmake_dependent_option(CEGUI_BUILD_EFFECTS11
+"Specifies whether to build the D3DX11Effects library.
+Source code need to be located at '%DXSDK_DIR%/Samples/C++/Effects11'.
+(Required for the Direct3D 11 Renderer module)" TRUE WIN32 FALSE)
+
+option(CEGUI_BUILD_ZLIB "Specifies whether to build the zlib library
+(Required for minizip resource provider support within in CEGUI).
+Note: Some other dependencies may automatically enable the building of this library" TRUE)
+
+option(CEGUI_BUILD_FREETYPE2 "Specifies whether to build the freetype 2 library.
+(Required for truetype and other font support within CEGUI)" TRUE)
+
+option(CEGUI_BUILD_PCRE "Specifies whether to build the pcre library.
+(Required for text validation / restriction within CEGUI::Editbox)" TRUE)
+
+option(CEGUI_BUILD_EXPAT "Specifies whether to build the expat XML parser library.
+(Required to build the CEGUIExpatParser module for CEGUI)" TRUE)
+
+option(CEGUI_BUILD_XERCES "Specifies whether to build the xerces-c++ XML parser library.
+(Required to build the CEGUIXercesParser module for CEGUI)" TRUE)
+
+option(CEGUI_BUILD_LUA "Specifies whether to build the lua library.
+(Required to build the lua scripting module for CEGUI)" TRUE)
+
+option(CEGUI_BUILD_SILLY "Specifies whether to build the SILLY image loading library.
+Enabling this will cause other libs to be built: zlib, libpng, jpeg
+(Required to build the CEGUISILLYImageCodec module for CEGUI)" TRUE)
+
+option(CEGUI_BUILD_FREEIMAGE "Specifies whether to build the FreeImage library.
+(Required to build the CEGUIFreeImageImageCodec module for CEGUI)" TRUE)
+
+option(CEGUI_BUILD_CORONA "Specifies whether to build the Corona library.
+Enabling this will cause other libs to be built: zlib, libpng, jpeg
+(Required to build the CEGUICoronaImageCodec module for CEGUI)" TRUE)
+
+option(CEGUI_BUILD_DEVIL "Specifies whether to build the IL and ILU libraries.
+Enabling this will cause other libs to be built: zlib, libpng, jpeg, libmng, libtiff
+(Required to build the CEGUIDevILImageCodec module for CEGUI)" TRUE)
+
+cmake_dependent_option(CEGUI_BUILD_FREEGLUT "Specifies whether to build the freeglut library.
+(Required to build the CEGUI samples with OpenGL support)" TRUE "NOT APPLE" FALSE)
+
+if (CEGUI_BUILD_SILLY OR CEGUI_BUILD_CORONA OR CEGUI_BUILD_DEVIL)
+    set(CEGUI_BUILD_LIBPNG TRUE)
+    set(CEGUI_BUILD_JPEG TRUE)
+endif()
+
+if (CEGUI_BUILD_DEVIL)
+	set(CEGUI_BUILD_LIBMNG TRUE)
+	set(CEGUI_BUILD_LIBTIFF TRUE)
+endif()
+
+if (CEGUI_BUILD_PCRE OR CEGUI_BUILD_LIBPNG OR CEGUI_BUILD_LIBTIFF)
+    set(CEGUI_BUILD_ZLIB TRUE)
+endif()
+
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/dependencies/include")
 
-if (WIN32)
+if (WIN32 AND CEGUI_BUILD_EFFECTS11 AND EXISTS "$ENV{DXSDK_DIR}/Samples/C++/Effects11")
     add_subdirectory(src/D3D11Effects/CEGUI-BUILD)
     set(Effects11Dep D3DX11Effects)
 endif()
 
-add_subdirectory(src/zlib-1.2.5/CEGUI-BUILD)
-add_subdirectory(src/libpng-1.4.7/CEGUI-BUILD)
-add_subdirectory(src/jpeg-8c/CEGUI-BUILD)
-add_subdirectory(src/libmng-1.0.10/CEGUI-BUILD)
-add_subdirectory(src/tiff-3.9.5/CEGUI-BUILD)
+if (CEGUI_BUILD_ZLIB)
+    add_subdirectory(src/zlib-1.2.5/CEGUI-BUILD)
+    set(zlibDep zlib)
+endif()
 
-add_subdirectory(src/freetype-2.4.4/CEGUI-BUILD)
-add_subdirectory(src/pcre-8.12/CEGUI-BUILD)
+if (CEGUI_BUILD_LIBPNG)
+    add_subdirectory(src/libpng-1.4.7/CEGUI-BUILD)
+    set(libpngDep libpng)
+endif()
 
-add_subdirectory(src/lua-5.1.4/CEGUI-BUILD)
+if (CEGUI_BUILD_JPEG)
+    add_subdirectory(src/jpeg-8c/CEGUI-BUILD)
+    set(jpegDep jpeg)
+endif()
 
-add_subdirectory(src/expat-2.0.1/CEGUI-BUILD)
-add_subdirectory(src/xerces-c-3.1.1/CEGUI-BUILD)
+if (CEGUI_BUILD_LIBMNG)
+    add_subdirectory(src/libmng-1.0.10/CEGUI-BUILD)
+    set(libmngDep libmng)
+endif()
 
-add_subdirectory(src/SILLY/CEGUI-BUILD)
-add_subdirectory(src/FreeImage-3.15.0/CEGUI-BUILD)
-add_subdirectory(src/corona-1.0.2/CEGUI-BUILD)
-add_subdirectory(src/devil-1.7.8/CEGUI-BUILD)
+if (CEGUI_BUILD_LIBTIFF)
+    add_subdirectory(src/tiff-3.9.5/CEGUI-BUILD)
+    set(libtiffDep libtiff)
+endif()
+
+if (CEGUI_BUILD_FREETYPE2)
+    add_subdirectory(src/freetype-2.4.4/CEGUI-BUILD)
+    set(freetypeDep freetype)
+endif()
+
+if (CEGUI_BUILD_PCRE)
+    add_subdirectory(src/pcre-8.12/CEGUI-BUILD)
+    set(pcreDep pcre)
+endif()
+
+if (CEGUI_BUILD_LUA)
+    add_subdirectory(src/lua-5.1.4/CEGUI-BUILD)
+    set(luaDep lua)
+endif()
+
+if (CEGUI_BUILD_EXPAT)
+    add_subdirectory(src/expat-2.0.1/CEGUI-BUILD)
+    set(expatDep expat)
+endif()
+
+if (CEGUI_BUILD_XERCES)
+    add_subdirectory(src/xerces-c-3.1.1/CEGUI-BUILD)
+    set(xercesDep xerces-c_3)
+endif()
+
+if (CEGUI_BUILD_SILLY)
+    add_subdirectory(src/SILLY/CEGUI-BUILD)
+    set(SILLYDep SILLY)
+endif()
+
+if (CEGUI_BUILD_FREEIMAGE)
+    add_subdirectory(src/FreeImage-3.15.0/CEGUI-BUILD)
+    set(FreeImageDep FreeImage)
+endif()
+
+if (CEGUI_BUILD_CORONA)
+    add_subdirectory(src/corona-1.0.2/CEGUI-BUILD)
+    set(coronaDep corona)
+endif()
+
+if (CEGUI_BUILD_DEVIL)
+    add_subdirectory(src/devil-1.7.8/CEGUI-BUILD)
+    set(ILDep IL)
+    set(ILUDep ILU)
+endif()
 
 # We use the OS X GLUT on Apple.
-if (NOT APPLE)
+if (NOT APPLE AND CEGUI_BUILD_FREEGLUT)
     add_subdirectory(src/freeglut-2.6.0/CEGUI-BUILD)
     set(FreeGLUTDep freeglut)
 endif()
 
 add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
-    zlib libpng jpeg libmng libtiff freetype pcre lua expat xerces-c_3 SILLY FreeImage corona IL ILU ${FreeGLUTDep} ${Effects11Dep})
+    ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep} ${FreeGLUTDep} ${Effects11Dep})
 
 if (MSVC)
     add_custom_command(TARGET POST_BUILD_CLEANUP COMMAND ${CMAKE_COMMAND} -P "${CMAKE_SOURCE_DIR}/msvc_postbuild.cmake")

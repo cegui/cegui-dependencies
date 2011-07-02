@@ -3,6 +3,7 @@
  * @todo  allow conversions from direct color images to
  *        palettized images
  */
+#include <memory.h>
 #include <map>
 #include <utility>
 #include "corona.h"

@@ -1,3 +1,4 @@
+#include <memory.h>
 #include <algorithm>
 #include "Debug.h"
 #include "Open.h"

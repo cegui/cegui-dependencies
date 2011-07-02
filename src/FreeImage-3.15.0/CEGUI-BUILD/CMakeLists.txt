@@ -331,6 +331,10 @@ set_target_properties(${DEPNAME} PROPERTIES
 set_target_properties(${DEPNAME}_static PROPERTIES
     COMPILE_DEFINITIONS "FREEIMAGE_LIB;OPJ_STATIC;LIBRAW_NODLL;NO_LCMS;MNG_BUILD_SO")
 
+if (MINGW)
+    target_link_libraries(${DEPNAME} ws2_32)
+endif()
+
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD 
                        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../Source/${_H_FILE}"
