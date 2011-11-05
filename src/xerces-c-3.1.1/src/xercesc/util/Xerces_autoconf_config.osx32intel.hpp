@@ -76,15 +76,9 @@
 // ---------------------------------------------------------------------------
 //  Include standard headers, if available, that we may rely on below.
 // ---------------------------------------------------------------------------
-#if XERCES_HAVE_INTTYPES_H
-#	include <inttypes.h>
-#endif
-#if XERCES_HAVE_SYS_TYPES_H
-#	include <sys/types.h>
-#endif
-#if XERCES_INCLUDE_WCHAR_H
-#	include <wchar.h>
-#endif
+#include <inttypes.h>
+#include <sys/types.h>
+#include <wchar.h>
 
 // ---------------------------------------------------------------------------
 //  XMLSize_t is the unsigned integral type.
