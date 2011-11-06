@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 include(CMakeDependentOption)
 
 if (APPLE)
-    set( CMAKE_OSX_ARCHITECTURES i386 CACHE STRING "Build architectures for Mac OS X" )
+    set( CMAKE_OSX_ARCHITECTURES i386;x86_64 CACHE STRING "Build architectures for Mac OS X" )
     set( CMAKE_BUILD_TYPE Release CACHE STRING "Sets the configuration to build (Release, Debug, etc...)")
 endif()
 
