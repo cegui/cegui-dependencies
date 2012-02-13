@@ -124,6 +124,9 @@ option(CEGUI_BUILD_DEVIL "Specifies whether to build the IL and ILU libraries.
 Enabling this will cause other libs to be built: zlib, libpng, jpeg, libmng, libtiff
 (Required to build the CEGUIDevILImageCodec module for CEGUI)" TRUE)
 
+option(CEGUI_BUILD_GLEW "Specifies whether to build the GLEW library.
+(Required to build either of the OpenGL based rendering modules for CEGUI)" TRUE)
+
 if (CEGUI_BUILD_SILLY OR CEGUI_BUILD_CORONA OR CEGUI_BUILD_DEVIL)
     set(CEGUI_BUILD_LIBPNG TRUE)
     set(CEGUI_BUILD_JPEG TRUE)
@@ -216,9 +219,15 @@ if (CEGUI_BUILD_DEVIL)
     set(ILUDep ILU)
 endif()
 
+if (CEGUI_BUILD_GLEW)
+    add_subdirectory(src/glew-1.7.0/CEGUI-BUILD)
+    set(glewDep glew)
+endif()
+
 add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
-    ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep} ${Effects11Dep})
+    ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep} ${Effects11Dep} ${glewDep})
 
 if (MSVC)
     add_custom_command(TARGET POST_BUILD_CLEANUP COMMAND ${CMAKE_COMMAND} -P "${CMAKE_SOURCE_DIR}/msvc_postbuild.cmake")
 endif()
+
