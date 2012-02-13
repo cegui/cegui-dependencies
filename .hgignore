@@ -1,0 +1,27 @@
+syntax: glob
+
+.DS_Store
+Thumbs.db
+.directory
+
+*.tmp
+*~
+
+*.orig
+*.rej
+*.pyc
+
+dependencies/
+build/
+
+xcuserdata/
+*.xcworkspace/
+*.kdev4
+.settings
+.project
+.cproject
+.pydevproject
+
+cppcheck-output
+
+glob:CEGUI-DEPS-0.8.x-beta3
