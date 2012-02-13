@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 include(CMakeDependentOption)
 
 if (APPLE)
-    set( CMAKE_OSX_ARCHITECTURES i386;x86_64 CACHE STRING "Build architectures for Mac OS X" )
+    set( CMAKE_OSX_ARCHITECTURES x86_64 CACHE STRING "Build architectures for Mac OS X" )
     set( CMAKE_BUILD_TYPE Release CACHE STRING "Sets the configuration to build (Release, Debug, etc...)")
 endif()
 
@@ -124,9 +124,6 @@ option(CEGUI_BUILD_DEVIL "Specifies whether to build the IL and ILU libraries.
 Enabling this will cause other libs to be built: zlib, libpng, jpeg, libmng, libtiff
 (Required to build the CEGUIDevILImageCodec module for CEGUI)" TRUE)
 
-cmake_dependent_option(CEGUI_BUILD_FREEGLUT "Specifies whether to build the freeglut library.
-(Required to build the CEGUI samples with OpenGL support)" TRUE "NOT APPLE" FALSE)
-
 if (CEGUI_BUILD_SILLY OR CEGUI_BUILD_CORONA OR CEGUI_BUILD_DEVIL)
     set(CEGUI_BUILD_LIBPNG TRUE)
     set(CEGUI_BUILD_JPEG TRUE)
@@ -219,14 +216,8 @@ if (CEGUI_BUILD_DEVIL)
     set(ILUDep ILU)
 endif()
 
-# We use the OS X GLUT on Apple.
-if (NOT APPLE AND CEGUI_BUILD_FREEGLUT)
-    add_subdirectory(src/freeglut-2.6.0/CEGUI-BUILD)
-    set(FreeGLUTDep freeglut)
-endif()
-
 add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
-    ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep} ${FreeGLUTDep} ${Effects11Dep})
+    ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep} ${Effects11Dep})
 
 if (MSVC)
     add_custom_command(TARGET POST_BUILD_CLEANUP COMMAND ${CMAKE_COMMAND} -P "${CMAKE_SOURCE_DIR}/msvc_postbuild.cmake")
