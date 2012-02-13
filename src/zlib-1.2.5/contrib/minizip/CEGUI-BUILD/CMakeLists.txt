@@ -7,7 +7,7 @@ if (WIN32)
     list (APPEND SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/../iowin32.c")
 endif()
 
-set(HEADERS zip.h unzip.h)
+set(HEADERS zip.h unzip.h ioapi.h)
 
 include_directories(../ ${CMAKE_BINARY_DIR}/dependencies/include)
 
