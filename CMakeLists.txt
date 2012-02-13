@@ -130,6 +130,9 @@ option(CEGUI_BUILD_GLEW "Specifies whether to build the GLEW library.
 option(CEGUI_BUILD_TINYXML "Specifies whether to build the tinyxml library.
 (Required to build the tinyxml based XML parser module for CEGUI)" TRUE)
 
+option(CEGUI_BUILD_MINIZIP "Specifies whether to build the minizip library.
+(Required to build the minizip based resource provider for CEGUI)" TRUE)
+
 if (CEGUI_BUILD_SILLY OR CEGUI_BUILD_CORONA OR CEGUI_BUILD_DEVIL)
     set(CEGUI_BUILD_LIBPNG TRUE)
     set(CEGUI_BUILD_JPEG TRUE)
@@ -140,7 +143,7 @@ if (CEGUI_BUILD_DEVIL)
 	set(CEGUI_BUILD_LIBTIFF TRUE)
 endif()
 
-if (CEGUI_BUILD_PCRE OR CEGUI_BUILD_LIBPNG OR CEGUI_BUILD_LIBTIFF)
+if (CEGUI_BUILD_PCRE OR CEGUI_BUILD_LIBPNG OR CEGUI_BUILD_LIBTIFF OR CEGUI_BUILD_MINIZIP)
     set(CEGUI_BUILD_ZLIB TRUE)
 endif()
 
@@ -232,9 +235,14 @@ if (CEGUI_BUILD_TINYXML)
     set(tinyxmlDep tinyxml)
 endif()
 
+if (CEGUI_BUILD_MINIZIP)
+    add_subdirectory(src/zlib-1.2.5/contrib/minizip/CEGUI-BUILD)
+    set(minizipDep minizip)
+endif()
+
 add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
     ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep} ${Effects11Dep}
-    ${glewDep} ${tinyxmlDep})
+    ${glewDep} ${tinyxmlDep} ${minizipDep})
 
 if (MSVC)
     add_custom_command(TARGET POST_BUILD_CLEANUP COMMAND ${CMAKE_COMMAND} -P "${CMAKE_SOURCE_DIR}/msvc_postbuild.cmake")
