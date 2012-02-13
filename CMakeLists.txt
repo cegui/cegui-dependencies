@@ -253,12 +253,11 @@ endif()
 
 if (CEGUI_BUILD_GLM)
     add_subdirectory(src/glm-0.9.3.1/CEGUI-BUILD)
-    set(glmDep glm)
 endif()
 
 add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
     ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep} ${Effects11Dep}
-    ${glewDep} ${tinyxmlDep} ${minizipDep} ${glfwDep} ${glmDep})
+    ${glewDep} ${tinyxmlDep} ${minizipDep} ${glfwDep})
 
 if (MSVC)
     add_custom_command(TARGET POST_BUILD_CLEANUP COMMAND ${CMAKE_COMMAND} -P "${CMAKE_SOURCE_DIR}/msvc_postbuild.cmake")

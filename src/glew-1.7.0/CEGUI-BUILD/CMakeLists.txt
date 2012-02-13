@@ -12,7 +12,7 @@ if (WIN32)
     set_target_properties(${DEPNAME} PROPERTIES
         DEFINE_SYMBOL GLEW_BUILD)
 
-    target_link_libraries(OpenGL32)
+    target_link_libraries(${DEPNAME} OpenGL32)
 endif()
 
 if (APPLE)
