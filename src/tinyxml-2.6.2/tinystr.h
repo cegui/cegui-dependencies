@@ -21,11 +21,32 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+/*
+IMPORTANT:
+    This file has been modified from the original by the CEGUI project to
+    support compilation as a DLL under windows
+*/
 
 #ifndef TIXML_USE_STL
 
 #ifndef TIXML_STRING_INCLUDED
 #define TIXML_STRING_INCLUDED
+
+#ifndef TINYXMLAPI
+#   ifdef WIN32
+#       ifdef TINYXML_STATIC
+#           define TINYXMLAPI
+#       else
+#           ifdef tinyxml_EXPORTS
+#               define TINYXMLAPI __declspec(dllexport)
+#           else
+#               define TINYXMLAPI __declspec(dllimport)
+#           endif
+#       endif
+#   else
+#       define TINYXMLAPI
+#   endif
+#endif
 
 #include <assert.h>
 #include <string.h>
@@ -52,7 +73,7 @@ distribution.
    The buffer allocation is made by a simplistic power of 2 like mechanism : if we increase
    a string and there's no more room, we allocate a buffer twice as big as we need.
 */
-class TiXmlString
+class TINYXMLAPI TiXmlString
 {
   public :
 	// The size type used
@@ -272,9 +293,9 @@ inline bool operator == (const char* a, const TiXmlString & b) { return b == a; 
 inline bool operator != (const TiXmlString & a, const char* b) { return !(a == b); }
 inline bool operator != (const char* a, const TiXmlString & b) { return !(b == a); }
 
-TiXmlString operator + (const TiXmlString & a, const TiXmlString & b);
-TiXmlString operator + (const TiXmlString & a, const char* b);
-TiXmlString operator + (const char* a, const TiXmlString & b);
+TINYXMLAPI TiXmlString operator + (const TiXmlString & a, const TiXmlString & b);
+TINYXMLAPI TiXmlString operator + (const TiXmlString & a, const char* b);
+TINYXMLAPI TiXmlString operator + (const char* a, const TiXmlString & b);
 
 
 /*

@@ -127,6 +127,9 @@ Enabling this will cause other libs to be built: zlib, libpng, jpeg, libmng, lib
 option(CEGUI_BUILD_GLEW "Specifies whether to build the GLEW library.
 (Required to build either of the OpenGL based rendering modules for CEGUI)" TRUE)
 
+option(CEGUI_BUILD_TINYXML "Specifies whether to build the tinyxml library.
+(Required to build the tinyxml based XML parser module for CEGUI)" TRUE)
+
 if (CEGUI_BUILD_SILLY OR CEGUI_BUILD_CORONA OR CEGUI_BUILD_DEVIL)
     set(CEGUI_BUILD_LIBPNG TRUE)
     set(CEGUI_BUILD_JPEG TRUE)
@@ -224,8 +227,14 @@ if (CEGUI_BUILD_GLEW)
     set(glewDep glew)
 endif()
 
+if (CEGUI_BUILD_TINYXML)
+    add_subdirectory(src/tinyxml-2.6.2/CEGUI-BUILD)
+    set(tinyxmlDep tinyxml)
+endif()
+
 add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
-    ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep} ${Effects11Dep} ${glewDep})
+    ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep} ${Effects11Dep}
+    ${glewDep} ${tinyxmlDep})
 
 if (MSVC)
     add_custom_command(TARGET POST_BUILD_CLEANUP COMMAND ${CMAKE_COMMAND} -P "${CMAKE_SOURCE_DIR}/msvc_postbuild.cmake")
