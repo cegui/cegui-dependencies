@@ -13,8 +13,8 @@ include_directories(
 cegui_add_library(IL IL_SOURCES NONE)
 
 if(WIN32)
-set_target_properties(IL PROPERTIES
-    COMPILE_DEFINITIONS "PNG_DLL;MNG_DLL")
+    set_target_properties(IL PROPERTIES
+        COMPILE_DEFINITIONS "PNG_DLL;MNG_DLL")
 endif()
 
 target_link_libraries(IL libpng libmng libtiff jpeg)
