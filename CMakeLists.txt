@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 2.8)
 include(CMakeDependentOption)
 
+if (NOT APPLE AND NOT WIN32)
+message(FATAL_ERROR
+"This dependency pack is intended for use on Apple OS X and MS Windows only. "
+"For other systems, such as GNU/Linux, please consult your package manager or "
+"distribution maintainer to discover how to install the libraries you wish to "
+"use with CEGUI.  Thanks!")
+endif()
+
 if (APPLE)
     set( CMAKE_OSX_ARCHITECTURES x86_64 CACHE STRING "Build architectures for Mac OS X" )
     set( CMAKE_BUILD_TYPE Release CACHE STRING "Sets the configuration to build (Release, Debug, etc...)")
