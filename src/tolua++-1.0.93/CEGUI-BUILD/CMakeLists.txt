@@ -9,7 +9,7 @@ include_directories(../include ../src/lib ${CMAKE_BINARY_DIR}/dependencies/inclu
 cegui_add_library(${DEPNAME} SOURCES NONE)
 
 set_target_properties(${DEPNAME}_static PROPERTIES
-    COMPILE_DEFINITIONS TOLUA_STATIC)
+    COMPILE_DEFINITIONS "TOLUA_STATIC;LUA_STATIC")
 
 target_link_libraries(${DEPNAME} lua)
 
