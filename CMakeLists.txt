@@ -139,6 +139,9 @@ option(CEGUI_BUILD_GLFW "Specifies whether to build the GLFW library.
 option(CEGUI_BUILD_GLM "Specifies whether to copy the GLM library headers.
 (Required to build the OpenGL 3 renderer module for CEGUI)" TRUE)
 
+option(CEGUI_BUILD_TOLUAPP "Specifies whether to build the tolua++ library.
+(Required to build the Lua script module for CEGUI)" TRUE)
+
 if (CEGUI_BUILD_SILLY OR CEGUI_BUILD_CORONA OR CEGUI_BUILD_DEVIL)
     set(CEGUI_BUILD_LIBPNG TRUE)
     set(CEGUI_BUILD_JPEG TRUE)
@@ -151,6 +154,10 @@ endif()
 
 if (CEGUI_BUILD_PCRE OR CEGUI_BUILD_LIBPNG OR CEGUI_BUILD_LIBTIFF OR CEGUI_BUILD_MINIZIP)
     set(CEGUI_BUILD_ZLIB TRUE)
+endif()
+
+if (CEGUI_BUILD_TOLUAPP)
+	set(CEGUI_BUILD_LUA TRUE)
 endif()
 
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/dependencies/include")
@@ -255,9 +262,14 @@ if (CEGUI_BUILD_GLM)
     add_subdirectory(src/glm-0.9.3.1/CEGUI-BUILD)
 endif()
 
+if (CEGUI_BUILD_TOLUAPP)
+    add_subdirectory(src/tolua++-1.0.93/CEGUI-BUILD)
+    set(toluappDep toluapp)
+endif()
+
 add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
     ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep} ${Effects11Dep}
-    ${glewDep} ${tinyxmlDep} ${minizipDep} ${glfwDep})
+    ${glewDep} ${tinyxmlDep} ${minizipDep} ${toluappDep} ${glfwDep})
 
 if (MSVC)
     add_custom_command(TARGET POST_BUILD_CLEANUP COMMAND ${CMAKE_COMMAND} -P "${CMAKE_SOURCE_DIR}/msvc_postbuild.cmake")
