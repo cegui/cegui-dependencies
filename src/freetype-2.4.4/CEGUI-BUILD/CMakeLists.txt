@@ -72,14 +72,13 @@ add_custom_command(TARGET ${DEPNAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/../include/"
                                                    "${CMAKE_BINARY_DIR}/dependencies/include")
 
-
 add_custom_command(TARGET ${DEPNAME} POST_BUILD 
                    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../docs/LICENSE.TXT"
                                                     "${CMAKE_BINARY_DIR}/dependencies/freetype-license.txt")
 add_custom_command(TARGET ${DEPNAME} POST_BUILD 
-                   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../docs/FTL.txt"
-                                                    "${CMAKE_BINARY_DIR}/dependencies/FTL.txt")
+                   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../docs/FTL.TXT"
+                                                    "${CMAKE_BINARY_DIR}/dependencies/FTL.TXT")
 add_custom_command(TARGET ${DEPNAME} POST_BUILD 
-                   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../docs/GPL.txt"
-                                                    "${CMAKE_BINARY_DIR}/dependencies/GPL.txt")
+                   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../docs/GPL.TXT"
+                                                    "${CMAKE_BINARY_DIR}/dependencies/GPL.TXT")
 
