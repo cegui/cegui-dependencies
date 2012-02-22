@@ -20,9 +20,9 @@
 
 
 void* ILAPIENTRY iSwitchTypes(ILuint SizeOfData, ILenum SrcType, ILenum DestType, void *Buffer);
-ILushort ILAPIENTRY ilFloatToHalf(ILuint i);
+/*ILushort ILAPIENTRY ilFloatToHalf(ILuint i);
 ILuint   ILAPIENTRY ilHalfToFloat (ILushort y);
-ILfloat  /*ILAPIENTRY*/ ilFloatToHalfOverflow();
+ILfloat  ilFloatToHalfOverflow();*/
 ILimage *iConvertPalette(ILimage *Image, ILenum DestFormat);
 
 #define CHECK_ALLOC() 	if (NewData == NULL) { \

@@ -20,6 +20,10 @@ extern "C" {
 ILboolean ilFlipImage(void);
 ILboolean ilMirrorImage(void);	//@JASON New routine created 03/28/2001
 
+INLINE ILfloat /*ILAPIENTRY*/ ilFloatToHalfOverflow();
+INLINE ILushort ILAPIENTRY ilFloatToHalf(ILuint i);
+INLINE ILuint ILAPIENTRY ilHalfToFloat (ILushort y);
+
 //-----------------------------------------------
 // Overflow handler for float-to-half conversion;
 // generates a hardware floating-point overflow,
@@ -42,7 +46,8 @@ INLINE ILfloat /*ILAPIENTRY*/ ilFloatToHalfOverflow() {
 #if defined(_MSC_VER)
 	#pragma warning(pop)
 #endif
-
+    
+    
 //-----------------------------------------------------
 // Float-to-half conversion -- general case, including
 // zeroes, denormalized numbers and exponent overflows.

@@ -56,42 +56,42 @@
 	#define BigDouble(d) iSwapDouble(d)
 #endif
 
-void   iSwapUShort(ILushort *s);
-void   iSwapShort(ILshort *s);
-void   iSwapUInt(ILuint *i);
-void   iSwapInt(ILint *i);
-void   iSwapFloat(ILfloat *f);
-void   iSwapDouble(ILdouble *d);
-ILushort GetLittleUShort();
-ILshort  GetLittleShort();
-ILuint   GetLittleUInt();
-ILint    GetLittleInt();
-ILfloat  GetLittleFloat();
-ILdouble GetLittleDouble();
-ILushort GetBigUShort();
-ILshort  GetBigShort();
-ILuint   GetBigUInt();
-ILint    GetBigInt();
-ILfloat  GetBigFloat();
-ILdouble GetBigDouble();
-ILubyte SaveLittleUShort(ILushort s);
-ILubyte SaveLittleShort(ILshort s);
-ILubyte SaveLittleUInt(ILuint i);
-ILubyte SaveLittleInt(ILint i);
-ILubyte SaveLittleFloat(ILfloat f);
-ILubyte SaveLittleDouble(ILdouble d);
-ILubyte SaveBigUShort(ILushort s);
-ILubyte SaveBigShort(ILshort s);
-ILubyte SaveBigUInt(ILuint i);
-ILubyte SaveBigInt(ILint i);
-ILubyte SaveBigFloat(ILfloat f);
-ILubyte SaveBigDouble(ILdouble d);
-
 #ifdef IL_ENDIAN_C
 #undef NOINLINE
 #undef INLINE
 #define INLINE
 #endif
+
+INLINE void   iSwapUShort(ILushort *s);
+INLINE void   iSwapShort(ILshort *s);
+INLINE void   iSwapUInt(ILuint *i);
+INLINE void   iSwapInt(ILint *i);
+INLINE void   iSwapFloat(ILfloat *f);
+INLINE void   iSwapDouble(ILdouble *d);
+INLINE ILushort GetLittleUShort();
+INLINE ILshort  GetLittleShort();
+INLINE ILuint   GetLittleUInt();
+INLINE ILint    GetLittleInt();
+INLINE ILfloat  GetLittleFloat();
+INLINE ILdouble GetLittleDouble();
+INLINE ILushort GetBigUShort();
+INLINE ILshort  GetBigShort();
+INLINE ILuint   GetBigUInt();
+INLINE ILint    GetBigInt();
+INLINE ILfloat  GetBigFloat();
+INLINE ILdouble GetBigDouble();
+INLINE ILubyte SaveLittleUShort(ILushort s);
+INLINE ILubyte SaveLittleShort(ILshort s);
+INLINE ILubyte SaveLittleUInt(ILuint i);
+INLINE ILubyte SaveLittleInt(ILint i);
+INLINE ILubyte SaveLittleFloat(ILfloat f);
+INLINE ILubyte SaveLittleDouble(ILdouble d);
+INLINE ILubyte SaveBigUShort(ILushort s);
+INLINE ILubyte SaveBigShort(ILshort s);
+INLINE ILubyte SaveBigUInt(ILuint i);
+INLINE ILubyte SaveBigInt(ILint i);
+INLINE ILubyte SaveBigFloat(ILfloat f);
+INLINE ILubyte SaveBigDouble(ILdouble d);
 
 #ifndef NOINLINE
 INLINE void iSwapUShort(ILushort *s)  {

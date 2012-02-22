@@ -23,7 +23,9 @@
 
 //#ifndef NOINLINE
 #ifndef INLINE
-#if defined(__GNUC__)
+#if defined (__clang__)
+    #define INLINE inline
+#elif defined(__GNUC__)
 	#define INLINE extern inline
 #elif defined(_MSC_VER)	//@TODO: Get this working in MSVC++.
 						//  http://www.greenend.org.uk/rjk/2003/03/inline.html
