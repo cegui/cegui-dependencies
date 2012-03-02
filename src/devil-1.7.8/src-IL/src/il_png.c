@@ -105,7 +105,7 @@ ILboolean iIsValidPng()
 	Read = iread(Signature, 1, 8);
 	iseek(-Read, IL_SEEK_CUR);
 
-	return png_sig_cmp(Signature, 0, 8);
+	return png_sig_cmp(Signature, 0, 8) == 0;
 }
 
 
