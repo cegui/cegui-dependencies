@@ -19,9 +19,11 @@ project(CEGUI-DEPS)
 set(CMAKE_DEBUG_POSTFIX _d)
 
 cmake_dependent_option( CEGUI_MSVC_STATIC_RUNTIME "Specifies whether to the static runtime (/MT and /MTd) or the DLL runtime (/MD and /MDd)." FALSE "MSVC" FALSE )
+mark_as_advanced(CEGUI_MSVC_STATIC_RUNTIME)
 
 if (APPLE)
     set(CEGUI_APPLE_DYLIB_INSTALL_PATH "@executable_path/../Frameworks" CACHE STRING "Specifies the install path for generated dylibs." )
+    mark_as_advanced(CEGUI_APPLE_DYLIB_INSTALL_PATH)
 endif()
 
 if (CEGUI_MSVC_STATIC_RUNTIME)
@@ -100,7 +102,7 @@ Source code need to be located at '%DXSDK_DIR%/Samples/C++/Effects11'.
 
 option(CEGUI_BUILD_ZLIB "Specifies whether to build the zlib library
 (Required for minizip resource provider support within in CEGUI).
-Note: Some other dependencies may automatically enable the building of this library" TRUE)
+Note: Some other dependencies may automatically enable the building of this library" FALSE)
 
 option(CEGUI_BUILD_FREETYPE2 "Specifies whether to build the freetype 2 library.
 (Required for truetype and other font support within CEGUI)" TRUE)
@@ -112,7 +114,7 @@ option(CEGUI_BUILD_EXPAT "Specifies whether to build the expat XML parser librar
 (Required to build the CEGUIExpatParser module for CEGUI)" TRUE)
 
 option(CEGUI_BUILD_XERCES "Specifies whether to build the xerces-c++ XML parser library.
-(Required to build the CEGUIXercesParser module for CEGUI)" TRUE)
+(Required to build the CEGUIXercesParser module for CEGUI)" FALSE)
 
 option(CEGUI_BUILD_LUA "Specifies whether to build the lua library.
 (Required to build the lua scripting module for CEGUI)" TRUE)
@@ -122,30 +124,30 @@ Enabling this will cause other libs to be built: zlib, libpng, jpeg
 (Required to build the CEGUISILLYImageCodec module for CEGUI)" TRUE)
 
 option(CEGUI_BUILD_FREEIMAGE "Specifies whether to build the FreeImage library.
-(Required to build the CEGUIFreeImageImageCodec module for CEGUI)" TRUE)
+(Required to build the CEGUIFreeImageImageCodec module for CEGUI)" FALSE)
 
 option(CEGUI_BUILD_CORONA "Specifies whether to build the Corona library.
 Enabling this will cause other libs to be built: zlib, libpng, jpeg
-(Required to build the CEGUICoronaImageCodec module for CEGUI)" TRUE)
+(Required to build the CEGUICoronaImageCodec module for CEGUI)" FALSE)
 
 option(CEGUI_BUILD_DEVIL "Specifies whether to build the IL and ILU libraries.
 Enabling this will cause other libs to be built: zlib, libpng, jpeg, libmng, libtiff
-(Required to build the CEGUIDevILImageCodec module for CEGUI)" TRUE)
+(Required to build the CEGUIDevILImageCodec module for CEGUI)" FALSE)
 
 option(CEGUI_BUILD_GLEW "Specifies whether to build the GLEW library.
-(Required to build either of the OpenGL based rendering modules for CEGUI)" TRUE)
+(Required to build the OpenGL renderer module for CEGUI)" TRUE)
 
 option(CEGUI_BUILD_TINYXML "Specifies whether to build the tinyxml library.
-(Required to build the tinyxml based XML parser module for CEGUI)" TRUE)
+(Required to build the tinyxml based XML parser module for CEGUI)" FALSE)
 
 option(CEGUI_BUILD_MINIZIP "Specifies whether to build the minizip library.
-(Required to build the minizip based resource provider for CEGUI)" TRUE)
+(Required to build the minizip based resource provider for CEGUI)" FALSE)
 
 option(CEGUI_BUILD_GLFW "Specifies whether to build the GLFW library.
 (Required to build the samples framework with OpenGL support.)" TRUE)
 
 option(CEGUI_BUILD_GLM "Specifies whether to copy the GLM library headers.
-(Required to build the OpenGL 3 renderer module for CEGUI)" TRUE)
+(Required to build the OpenGL renderer module for CEGUI)" TRUE)
 
 option(CEGUI_BUILD_TOLUAPP "Specifies whether to build the tolua++ library.
 (Required to build the Lua script module for CEGUI)" TRUE)
