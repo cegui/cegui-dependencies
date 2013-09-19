@@ -269,7 +269,7 @@ if (CEGUI_BUILD_GLFW)
 endif()
 
 if (CEGUI_BUILD_GLM)
-    add_subdirectory(src/glm-0.9.3.1/CEGUI-BUILD)
+    add_subdirectory(src/glm-0.9.4.5/CEGUI-BUILD)
 endif()
 
 if (CEGUI_BUILD_TOLUAPP)
