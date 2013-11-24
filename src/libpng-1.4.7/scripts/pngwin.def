@@ -2,7 +2,7 @@
 ; LIBPNG module definition file for Windows
 ;------------------------------------------
 
-LIBRARY
+LIBRARY libpng
 
 EXPORTS
 ;Version 1.4.7
