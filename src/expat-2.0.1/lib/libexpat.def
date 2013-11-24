@@ -1,6 +1,6 @@
-; DEF file for MS VC++
+; DEF file for Windows
 
-LIBRARY
+LIBRARY libexpat
 EXPORTS
   XML_DefaultCurrent @1
   XML_ErrorString @2

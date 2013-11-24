@@ -1,6 +1,6 @@
-; DEF file for MS VC++
+; DEF file for Windows
 
-LIBRARY
+LIBRARY libexpatw
 EXPORTS
   XML_DefaultCurrent @1
   XML_ErrorString @2
