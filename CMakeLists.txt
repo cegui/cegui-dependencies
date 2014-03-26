@@ -117,7 +117,7 @@ option(CEGUI_BUILD_XERCES "Specifies whether to build the xerces-c++ XML parser 
 (Required to build the CEGUIXercesParser module for CEGUI)" FALSE)
 
 option(CEGUI_BUILD_LUA "Specifies whether to build the lua library.
-(Required to build the lua scripting module for CEGUI)" TRUE)
+(Required to build the lua scripting module for CEGUI)" FALSE)
 
 option(CEGUI_BUILD_SILLY "Specifies whether to build the SILLY image loading library.
 Enabling this will cause other libs to be built: zlib, libpng, jpeg
@@ -150,7 +150,7 @@ option(CEGUI_BUILD_GLM "Specifies whether to copy the GLM library headers.
 (Required to build the OpenGL renderer module for CEGUI)" TRUE)
 
 option(CEGUI_BUILD_TOLUAPP "Specifies whether to build the tolua++ library.
-(Required to build the Lua script module for CEGUI)" TRUE)
+(Required to build the Lua script module for CEGUI)" FALSE)
 
 if (CEGUI_BUILD_SILLY OR CEGUI_BUILD_CORONA OR CEGUI_BUILD_DEVIL)
     set(CEGUI_BUILD_LIBPNG TRUE)
