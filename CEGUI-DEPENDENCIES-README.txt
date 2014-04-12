@@ -11,9 +11,6 @@ Certain source files are also modified:
 * Freetype was modified to be able to build as a DLL.
 * jpeg library was modified to be able to build as a DLL.
 * libtiff was modified to be able to build as a DLL.
-* FreeGLUT was modified to remove the #pragma use that (may) auto-link to libs
-  when using MSVC.  Having been bitten by this previously, I was taking no
-  chances this time around :)
 * Some packages contain additional config header files which we copy into place
   for OS X, this is done to specify pre-configured settings and replaces an
   invocation of some ./configure script (or similar).
@@ -26,5 +23,5 @@ say that these libs are /not/ the original code - to guarantee you're using
 the original, umodified, code you should download your own copies of the
 original source and perform your own build.
 
-28th May 2011, The CEGUI Project.
+12th April 2014, The CEGUI Project.
 
