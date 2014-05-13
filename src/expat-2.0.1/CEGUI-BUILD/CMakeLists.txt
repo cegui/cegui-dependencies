@@ -1,4 +1,4 @@
-set(DEPNAME expat)
+set(DEPNAME libexpat)
 
 set(SOURCES ../lib/libexpat.def ../lib/xmlrole.c ../lib/xmltok.c ../lib/xmlparse.c)
 set(HEADERS expat.h expat_external.h)
