@@ -23,7 +23,12 @@ set_property(TARGET ${DEPNAME} APPEND PROPERTY
     COMPILE_DEFINITIONS "PNG_NO_MMX_CODE")
 
 set_target_properties(${DEPNAME} PROPERTIES
+    IMPORT_PREFIX ""
+    PREFIX ""
     COMPILE_DEFINITIONS_DEBUG "PNG_DEBUG=1")
+
+set_target_properties(${DEPNAME}_static PROPERTIES
+    PREFIX "")
 
 target_link_libraries(${DEPNAME} zlib)
 
@@ -36,13 +41,13 @@ set_target_properties(${DEPNAME}_static PROPERTIES
     COMPILE_DEFINITIONS PNG_NO_MMX_CODE)
 
 foreach(_H_FILE ${HEADERS})
-    add_custom_command(TARGET ${DEPNAME} POST_BUILD 
+    add_custom_command(TARGET ${DEPNAME} POST_BUILD
                        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../${_H_FILE}"
                                                         "${CMAKE_BINARY_DIR}/dependencies/include/${_H_FILE}")
 endforeach()
 
 
-add_custom_command(TARGET ${DEPNAME} POST_BUILD 
+add_custom_command(TARGET ${DEPNAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE"
                                                     "${CMAKE_BINARY_DIR}/dependencies/libpng-license.txt")
 
