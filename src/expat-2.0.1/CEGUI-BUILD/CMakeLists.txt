@@ -21,6 +21,11 @@ if (NOT WIN32)
 
 endif()
 
+# In the case of libexpat, we need to remove any prefixes that get generated
+# to prevent a double `lib` prefixing (e.g.: liblibexpat.(a|dll)) being generated.
+# This is the case when compiling with gcc for example. Thus, we set no prefix
+# for the dynamic and static libraries.
+
 set_target_properties(${DEPNAME} PROPERTIES
     IMPORT_PREFIX ""
     PREFIX "")
