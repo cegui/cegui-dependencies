@@ -22,6 +22,11 @@ endif()
 set_property(TARGET ${DEPNAME} APPEND PROPERTY
     COMPILE_DEFINITIONS "PNG_NO_MMX_CODE")
 
+# In the case of libpng, we need to remove any prefixes that get generated
+# to prevent a double `lib` prefixing (e.g.: liblibpng.(a|dll)) being generated.
+# This is the case when compiling with gcc for example. Thus, we set no prefix
+# for the dynamic and static libraries.
+
 set_target_properties(${DEPNAME} PROPERTIES
     IMPORT_PREFIX ""
     PREFIX ""
