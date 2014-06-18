@@ -24,7 +24,7 @@ set_target_properties(dftables PROPERTIES
     COMPILE_DEFINITIONS "HAVE_CONFIG_H;HAVE_STDINT_H=0;HAVE_INTTYPES_H=0")
 
 add_custom_command(OUTPUT ../pcre_chartables.c
-                   COMMAND dftables "${CMAKE_CURRENT_BINARY_DIR}/../pcre_chartables.c")
+                   COMMAND ../dftables "${CMAKE_CURRENT_BINARY_DIR}/../pcre_chartables.c")
 
 list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/../pcre_chartables.c")
 cegui_add_library(${DEPNAME} SOURCES NONE)

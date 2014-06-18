@@ -28,7 +28,7 @@ if (WIN32)
     set_target_properties(${DEPNAME}_static PROPERTIES
         COMPILE_DEFINITIONS "")
 
-    target_link_libraries(${DEPNAME} OpenGL32)
+    target_link_libraries(${DEPNAME} opengl32)
 endif()
 
 if (APPLE)
