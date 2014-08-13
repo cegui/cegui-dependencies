@@ -23,13 +23,8 @@ set_target_properties(dftables PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_CURRENT_BINARY_DIR}/.."
     COMPILE_DEFINITIONS "HAVE_CONFIG_H;HAVE_STDINT_H=0;HAVE_INTTYPES_H=0")
 
-if(WIN32)
-    add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/../pcre_chartables.c"
-                       COMMAND "${CMAKE_CURRENT_BINARY_DIR}/../dftables.exe" "${CMAKE_CURRENT_BINARY_DIR}/../pcre_chartables.c")
-else()
     add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/../pcre_chartables.c"
                        COMMAND "${CMAKE_CURRENT_BINARY_DIR}/../dftables" "${CMAKE_CURRENT_BINARY_DIR}/../pcre_chartables.c")
-endif()
 
 list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/../pcre_chartables.c")
 cegui_add_library(${DEPNAME} SOURCES NONE)
