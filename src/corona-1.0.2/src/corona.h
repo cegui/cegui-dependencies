@@ -165,6 +165,8 @@ namespace corona {
    */
   class Image : public DLLInterface {
   public:
+    virtual ~Image() {}
+
     /**
      * Get image width.
      * @return  image width
@@ -233,6 +235,8 @@ namespace corona {
       END       /**< relative to the end of the file: position should
                      be negative*/
     };
+
+    virtual ~File() {}
 
     /**
      * Read size bytes from the file, storing them in buffer.
