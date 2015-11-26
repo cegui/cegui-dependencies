@@ -24,4 +24,11 @@ xcuserdata/
 
 cppcheck-output
 
+src/jpeg-8c/jconfig.h
+src/pcre-8.12/config.h
+src/pcre-8.12/pcre.h
+src/tiff-3.9.5/libtiff/tif_config.h
+src/tiff-3.9.5/libtiff/tiffconf.h
+src/xerces-c-3.1.1/src/xercesc/util/Xerces_autoconf_config.hpp
+
 glob:CEGUI-DEPS-0.8.x-beta3
