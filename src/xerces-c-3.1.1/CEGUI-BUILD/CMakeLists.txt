@@ -805,14 +805,15 @@ include_directories(
     ../src
 )
 
-if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.hpp")
-    if (WIN32)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.msvc.hpp"
-                                                         "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.hpp")
-    elseif(APPLE)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.osx32intel.hpp"
-                                                         "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.hpp")
-    endif()
+if (MSVC)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.msvc.hpp"
+                                                     "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.hpp")
+elseif (MINGW)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.mingw-w64.hpp"
+                                                     "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.hpp")
+elseif(APPLE)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.osx32intel.hpp"
+                                                     "${CMAKE_CURRENT_SOURCE_DIR}/../src/xercesc/util/Xerces_autoconf_config.hpp")
 endif()
 cegui_add_library(${DEPNAME} SOURCES NONE)
 
