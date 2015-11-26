@@ -1,6 +1,13 @@
 set(DEPNAME expat)
 
-set(SOURCES ../lib/libexpat.def ../lib/xmlrole.c ../lib/xmltok.c ../lib/xmlparse.c)
+set(SOURCES ../lib/xmlrole.c ../lib/xmltok.c ../lib/xmlparse.c)
+if (WIN32)
+    if (MINGW)
+        set (SOURCES ${SOURCES} "../lib/libexpat${CMAKE_DEBUG_POSTFIX}.def")
+    else ()
+        set (SOURCES ${SOURCES} "../lib/expat${CMAKE_DEBUG_POSTFIX}.def")
+    endif ()
+endif ()
 set(HEADERS expat.h expat_external.h)
 
 if(WIN32)
