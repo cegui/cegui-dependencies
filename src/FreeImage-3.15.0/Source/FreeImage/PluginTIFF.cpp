@@ -206,7 +206,7 @@ TIFFFdOpen(thandle_t handle, const char *name, const char *mode) {
     // 64bit machines (sizeof(int) != sizeof(long)). 
     // Needs to be fixed within libTIFF.
 	if (tif) {
-		tif->tif_fd = (long)handle;
+		tif->tif_fd = static_cast<int>(reinterpret_cast<std::size_t>(handle));
 	}
 
 	return tif;
