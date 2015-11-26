@@ -4,7 +4,7 @@ file(GLOB SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "../png*.c")
 list(REMOVE_ITEM SOURCES ../pnggccrd.c ../pngvcrd.c ../pngtest.c)
 
 if (WIN32)
-    list(APPEND SOURCES ../scripts/pngwin.def)
+    list(APPEND SOURCES ../scripts/pngwin${CMAKE_DEBUG_POSTFIX}.def)
 endif()
 
 set(HEADERS png.h pngconf.h)
