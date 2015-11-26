@@ -46,6 +46,18 @@ target_link_libraries(${DEPNAME} zlib jpeg)
 # the shared build
 add_dependencies(${DEPNAME}_static zlib jpeg)
 
+# In the case of libtiff, we need to remove any prefixes that get generated
+# to prevent a double `lib` prefixing (e.g.: liblibtiff.(a|dll)) being
+# generated. This is the case when compiling with gcc for example. Thus, we set
+# no prefix for the dynamic and static libraries.
+
+set_target_properties(${DEPNAME} PROPERTIES
+    PREFIX ""
+    IMPORT_PREFIX "")
+
+set_target_properties(${DEPNAME}_static PROPERTIES
+    PREFIX "")
+
 if (WIN32)
     set_target_properties(${DEPNAME} PROPERTIES COMPILE_DEFINITIONS
         "USE_WIN_CRT_LIB=1;WINMODE_CONSOLE=1;CCITT_SUPPORT=1;PACKBITS_SUPPORT=1;LZW_SUPPORT=1;THUNDER_SUPPORT=1;NEXT_SUPPORT=1;LOGLUV_SUPPORT=1;ZIP_SUPPORT=1;STRIPCHOP_SUPPORT=1;STRIP_SIZE_DEFAULT=8192;EXTRASAMPLE_AS_ALPHA_SUPPORT=1;CHECK_JPEG_YCBCR_SUBSAMPLING=1")
