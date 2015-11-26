@@ -98,7 +98,7 @@ endmacro()
 cmake_dependent_option(CEGUI_BUILD_EFFECTS11
 "Specifies whether to build the D3DX11Effects library.
 Source code need to be located at '%DXSDK_DIR%/Samples/C++/Effects11'.
-(Required for the Direct3D 11 Renderer module)" TRUE WIN32 FALSE)
+(Required for the Direct3D 11 Renderer module)" TRUE "WIN32; NOT MINGW" FALSE)
 
 option(CEGUI_BUILD_ZLIB "Specifies whether to build the zlib library
 (Required for minizip resource provider support within in CEGUI).
