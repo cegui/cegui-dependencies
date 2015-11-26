@@ -71,33 +71,33 @@ public:
     //
     //  We support the
     // -----------------------------------------------------------------------
-    const XMLCh* getKey() const;
-    XMLCh* getKey();
-    const XMLCh* getValue() const;
-    XMLCh* getValue();
+    inline const XMLCh* getKey() const;
+    inline XMLCh* getKey();
+    inline const XMLCh* getValue() const;
+    inline XMLCh* getValue();
 
 
     // -----------------------------------------------------------------------
     //  Setters
     // -----------------------------------------------------------------------
-    void setKey(const XMLCh* const newKey);
-    void setValue(const XMLCh* const newValue);
-    void setKey
+    inline void setKey(const XMLCh* const newKey);
+    inline void setValue(const XMLCh* const newValue);
+    inline void setKey
     (
         const   XMLCh* const newKey
         , const XMLSize_t    newKeyLength
     );
-    void setValue
+    inline void setValue
     (
         const   XMLCh* const newValue
         , const XMLSize_t    newValueLength
     );
-    void set
+    inline void set
     (
         const   XMLCh* const newKey
         , const XMLCh* const newValue
     );
-    void set
+    inline void set
     (
         const     XMLCh* const newKey
         , const   XMLSize_t    newKeyLength
@@ -140,22 +140,22 @@ private :
 // ---------------------------------------------------------------------------
 //  KVStringPair: Getters
 // ---------------------------------------------------------------------------
-inline const XMLCh* KVStringPair::getKey() const
+const XMLCh* KVStringPair::getKey() const
 {
     return fKey;
 }
 
-inline XMLCh* KVStringPair::getKey()
+XMLCh* KVStringPair::getKey()
 {
     return fKey;
 }
 
-inline const XMLCh* KVStringPair::getValue() const
+const XMLCh* KVStringPair::getValue() const
 {
     return fValue;
 }
 
-inline XMLCh* KVStringPair::getValue()
+XMLCh* KVStringPair::getValue()
 {
     return fValue;
 }
@@ -163,17 +163,17 @@ inline XMLCh* KVStringPair::getValue()
 // ---------------------------------------------------------------------------
 //  KVStringPair: Setters
 // ---------------------------------------------------------------------------
-inline void KVStringPair::setKey(const XMLCh* const newKey)
+void KVStringPair::setKey(const XMLCh* const newKey)
 {
     setKey(newKey, XMLString::stringLen(newKey));
 }
 
-inline void KVStringPair::setValue(const XMLCh* const newValue)
+void KVStringPair::setValue(const XMLCh* const newValue)
 {
     setValue(newValue, XMLString::stringLen(newValue));
 }
 
-inline void KVStringPair::setKey(  const XMLCh* const newKey
+void KVStringPair::setKey(  const XMLCh* const newKey
                                  , const XMLSize_t    newKeyLength)
 {
     if (newKeyLength >= fKeyAllocSize)
@@ -187,7 +187,7 @@ inline void KVStringPair::setKey(  const XMLCh* const newKey
     memcpy(fKey, newKey, (newKeyLength+1) * sizeof(XMLCh)); // len+1 because of the 0 at the end
 }
 
-inline void KVStringPair::setValue(  const XMLCh* const newValue
+void KVStringPair::setValue(  const XMLCh* const newValue
                                    , const XMLSize_t    newValueLength)
 {
     if (newValueLength >= fValueAllocSize)
@@ -201,14 +201,14 @@ inline void KVStringPair::setValue(  const XMLCh* const newValue
     memcpy(fValue, newValue, (newValueLength+1) * sizeof(XMLCh)); // len+1 because of the 0 at the end
 }
 
-inline void KVStringPair::set(  const   XMLCh* const    newKey
+void KVStringPair::set(  const   XMLCh* const    newKey
                               , const   XMLCh* const    newValue)
 {
     setKey(newKey, XMLString::stringLen(newKey));
     setValue(newValue, XMLString::stringLen(newValue));
 }
 
-inline void KVStringPair::set(  const   XMLCh* const newKey
+void KVStringPair::set(  const   XMLCh* const newKey
                               , const   XMLSize_t    newKeyLength
                               , const   XMLCh* const newValue
                               , const   XMLSize_t    newValueLength)
