@@ -219,7 +219,7 @@ endif()
 
 if (CEGUI_BUILD_EXPAT)
     add_subdirectory(src/expat-2.0.1/CEGUI-BUILD)
-    set(expatDep libexpat)
+    set(expatDep expat)
 endif()
 
 if (CEGUI_BUILD_XERCES)
