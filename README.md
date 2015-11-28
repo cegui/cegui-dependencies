@@ -3,6 +3,10 @@ This package contains source code and a custom cmake build environment for the
 majority of the optional dependency libraries that can be utilised by various
 parts of the 'Crazy Eddie's GUI System' (CEGUI) project.
 
+The `v0-8` branch of this repository maintains ABI compatibility and is also the dependency package for the CEGUI `v0` branch.
+
+The `default` branch of this repository breaks ABI/API compatibility and is the dependency package for the CEGUI `default` branch.
+
 Note that none of the included source packages are in totally pristine and
 unmodified form - for example, each package will contain a CEGUI-BUILD
 directory that contains - at least - the custom CMakeLists.txt file.
