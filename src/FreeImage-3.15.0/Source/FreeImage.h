@@ -40,15 +40,7 @@
 	#define DLL_API
 	#define DLL_CALLCONV
 #else
-        #ifdef __MINGW32__
-		#define DLL_CALLCONV __attribute__((stdcall))
-		// defined with this macro as being exported.
-		#ifdef FREEIMAGE_EXPORTS
-			#define DLL_API __attribute__((dllexport))
-		#else
-			#define DLL_API __attribute__((dllimport))
-		#endif // FREEIMAGE_EXPORTS
-	#elif defined(_WIN32) || defined(__WIN32__)
+	#if defined(_WIN32) || defined(__WIN32__)
 		#define DLL_CALLCONV __stdcall
 		// The following ifdef block is the standard way of creating macros which make exporting 
 		// from a DLL simpler. All files within this DLL are compiled with the FREEIMAGE_EXPORTS
