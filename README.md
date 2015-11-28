@@ -1,7 +1,17 @@
-# CEGUI Windows and Mac OS X dependencies package for CEGUI 0.8.X (v0-8) and CEGUI 0.X (v0)
+# Windows and Mac OS X dependencies package for CEGUI
+
 This package contains source code and a custom cmake build environment for the
 majority of the optional dependency libraries that can be utilised by various
 parts of the 'Crazy Eddie's GUI System' (CEGUI) project.
+
+## Available branches and versions
+
+- The CEGUI-dependencies repository consists of multiple branches:
+    - `v0-8` is meant to be used with CEGUI releases 0.x, as well as with CEGUI development branches `v0-8` and `v0`. As this branch is ABI compatible, it is possible to replace CEGUI-dependencies dynamic libraries from a specific revision in this branch with another revision in this branch, without having to rebuild the project.
+
+    - `default` is meant to be used with the CEGUI development branch `default`. This branch may break ABI and API compatibility between any 2 revisions in this branch, or between any revision in this branch and a revision in the `v0-8` branch. That means if you switch between revisions you'll have to rebuild your project. Normally you'll only want to use this branch if you're using CEGUI branch `default`.
+
+---
 
 Note that none of the included source packages are in totally pristine and
 unmodified form - for example, each package will contain a CEGUI-BUILD
