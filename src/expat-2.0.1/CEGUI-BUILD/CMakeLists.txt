@@ -1,13 +1,6 @@
-set(DEPNAME expat)
+set(DEPNAME libexpat)
 
-set(SOURCES ../lib/xmlrole.c ../lib/xmltok.c ../lib/xmlparse.c)
-if (WIN32)
-    if (MINGW)
-        set (SOURCES ${SOURCES} "../lib/libexpat${CMAKE_DEBUG_POSTFIX}.def")
-    else ()
-        set (SOURCES ${SOURCES} "../lib/expat${CMAKE_DEBUG_POSTFIX}.def")
-    endif ()
-endif ()
+set(SOURCES ../lib/libexpat${CMAKE_DEBUG_POSTFIX}.def ../lib/xmlrole.c ../lib/xmltok.c ../lib/xmlparse.c)
 set(HEADERS expat.h expat_external.h)
 
 if(WIN32)
@@ -27,6 +20,18 @@ if (NOT WIN32)
         COMPILE_DEFINITIONS HAVE_MEMMOVE)
 
 endif()
+
+# In the case of libexpat, we need to remove any prefixes that get generated
+# to prevent a double `lib` prefixing (e.g.: liblibexpat.(a|dll)) being generated.
+# This is the case when compiling with gcc for example. Thus, we set no prefix
+# for the dynamic and static libraries.
+
+set_target_properties(${DEPNAME} PROPERTIES
+    IMPORT_PREFIX ""
+    PREFIX "")
+
+set_target_properties(${DEPNAME}_static PROPERTIES
+    PREFIX "")
 
 foreach(_H_FILE ${HEADERS})
 add_custom_command(TARGET ${DEPNAME} POST_BUILD 
