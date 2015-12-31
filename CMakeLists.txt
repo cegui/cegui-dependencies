@@ -95,11 +95,6 @@ macro(cegui_add_library _NAME _SOURCES_VAR _HEADERS_VAR)
 
 endmacro()
 
-cmake_dependent_option(CEGUI_BUILD_EFFECTS11
-"Specifies whether to build the D3DX11Effects library.
-Source code need to be located at '%DXSDK_DIR%/Samples/C++/Effects11'.
-(Required for the Direct3D 11 Renderer module)" TRUE "WIN32; NOT MINGW" FALSE)
-
 option(CEGUI_BUILD_ZLIB "Specifies whether to build the zlib library
 (Required for minizip resource provider support within in CEGUI).
 Note: Some other dependencies may automatically enable the building of this library" FALSE)
@@ -171,11 +166,6 @@ if (CEGUI_BUILD_TOLUAPP)
 endif()
 
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/dependencies/include")
-
-if (WIN32 AND CEGUI_BUILD_EFFECTS11 AND EXISTS "$ENV{DXSDK_DIR}/Samples/C++/Effects11")
-    add_subdirectory(src/D3D11Effects/CEGUI-BUILD)
-    set(Effects11Dep D3DX11Effects)
-endif()
 
 if (CEGUI_BUILD_ZLIB)
     add_subdirectory(src/zlib-1.2.5/CEGUI-BUILD)
@@ -278,7 +268,7 @@ if (CEGUI_BUILD_TOLUAPP)
 endif()
 
 add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
-    ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep} ${Effects11Dep}
+    ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep}
     ${glewDep} ${tinyxmlDep} ${minizipDep} ${toluappDep} ${glfwDep})
 
 if (MSVC)
