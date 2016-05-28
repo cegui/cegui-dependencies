@@ -193,7 +193,7 @@ if (CEGUI_BUILD_LIBTIFF)
 endif()
 
 if (CEGUI_BUILD_FREETYPE2)
-    add_subdirectory(src/freetype-2.4.4/CEGUI-BUILD)
+    add_subdirectory(src/freetype-2.6.3/CEGUI-BUILD)
     set(freetypeDep freetype)
 endif()
 
