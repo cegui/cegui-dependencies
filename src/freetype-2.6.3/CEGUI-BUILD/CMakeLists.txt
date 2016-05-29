@@ -57,9 +57,13 @@ include_directories(../include)
 
 cegui_add_library(${DEPNAME} SOURCES HEADERS)
 
+set(TARGET_COMPILE_FLAGS
+    $<$<CONFIG:Release>:FT2_BUILD_LIBRARY>
+    $<$<CONFIG:Debug>:FT_DEBUG_LEVEL_ERROR;FT_DEBUG_LEVEL_TRACE;FT2_BUILD_LIBRARY>>
+)
+    
 set_target_properties(${DEPNAME} PROPERTIES
-    COMPILE_DEFINITIONS FT2_BUILD_LIBRARY
-	COMPILE_DEFINITIONS_DEBUG "FT_DEBUG_LEVEL_ERROR;FT_DEBUG_LEVEL_TRACE")
+    COMPILE_DEFINITIONS "${TARGET_COMPILE_FLAGS}")
 
 if (APPLE)
     set_target_properties(${DEPNAME} PROPERTIES
@@ -67,8 +71,7 @@ if (APPLE)
 endif()
 
 set_target_properties(${DEPNAME}_static PROPERTIES
-    COMPILE_DEFINITIONS FT2_BUILD_LIBRARY
-	COMPILE_DEFINITIONS_DEBUG "FT_DEBUG_LEVEL_ERROR;FT_DEBUG_LEVEL_TRACE")
+    COMPILE_DEFINITIONS "${TARGET_COMPILE_FLAGS}")
 
 add_custom_command(TARGET ${DEPNAME} POST_BUILD 
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/../include/"
@@ -83,4 +86,3 @@ add_custom_command(TARGET ${DEPNAME} POST_BUILD
 add_custom_command(TARGET ${DEPNAME} POST_BUILD 
                    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../docs/GPLv2.TXT"
                                                     "${CMAKE_BINARY_DIR}/dependencies/GPLv2.TXT")
-
