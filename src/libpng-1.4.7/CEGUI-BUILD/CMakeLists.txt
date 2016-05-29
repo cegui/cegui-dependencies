@@ -27,10 +27,14 @@ set_property(TARGET ${DEPNAME} APPEND PROPERTY
 # This is the case when compiling with gcc for example. Thus, we set no prefix
 # for the dynamic and static libraries.
 
+set(TARGET_COMPILE_FLAGS
+    $<$<CONFIG:Debug>:PNG_DEBUG=1>>
+)
+
 set_target_properties(${DEPNAME} PROPERTIES
     IMPORT_PREFIX ""
     PREFIX ""
-    COMPILE_DEFINITIONS_DEBUG "PNG_DEBUG=1")
+    COMPILE_DEFINITIONS TARGET_COMPILE_FLAGS)
 
 set_target_properties(${DEPNAME}_static PROPERTIES
     PREFIX "")
@@ -41,9 +45,13 @@ target_link_libraries(${DEPNAME} zlib)
 # the shared build
 add_dependencies(${DEPNAME}_static zlib)
 
+set(TARGET_COMPILE_FLAGS
+    PNG_NO_MMX_CODE
+    $<$<CONFIG:Debug>:PNG_DEBUG=1>>
+)
+
 set_target_properties(${DEPNAME}_static PROPERTIES
-    COMPILE_DEFINITIONS_DEBUG "PNG_DEBUG=1"
-    COMPILE_DEFINITIONS PNG_NO_MMX_CODE)
+    COMPILE_DEFINITIONS "${TARGET_COMPILE_FLAGS}")
 
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD
