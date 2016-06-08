@@ -58,8 +58,8 @@ include_directories(../include)
 cegui_add_library(${DEPNAME} SOURCES HEADERS)
 
 set(TARGET_COMPILE_FLAGS
-    $<$<CONFIG:Release>:FT2_BUILD_LIBRARY>
-    $<$<CONFIG:Debug>:FT_DEBUG_LEVEL_ERROR;FT_DEBUG_LEVEL_TRACE;FT2_BUILD_LIBRARY>
+    FT2_BUILD_LIBRARY
+    $<$<CONFIG:Debug>:FT_DEBUG_LEVEL_ERROR;FT_DEBUG_LEVEL_TRACE>
 )
 
 set_target_properties(${DEPNAME} PROPERTIES
