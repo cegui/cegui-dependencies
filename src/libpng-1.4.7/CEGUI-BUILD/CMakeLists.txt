@@ -28,7 +28,7 @@ set_property(TARGET ${DEPNAME} APPEND PROPERTY
 # for the dynamic and static libraries.
 
 set(TARGET_COMPILE_FLAGS
-    $<$<CONFIG:Debug>:PNG_DEBUG=1>>
+    $<$<CONFIG:Debug>:PNG_DEBUG=1>
 )
 
 set_target_properties(${DEPNAME} PROPERTIES
@@ -47,7 +47,7 @@ add_dependencies(${DEPNAME}_static zlib)
 
 set(TARGET_COMPILE_FLAGS
     PNG_NO_MMX_CODE
-    $<$<CONFIG:Debug>:PNG_DEBUG=1>>
+    $<$<CONFIG:Debug>:PNG_DEBUG=1>
 )
 
 set_target_properties(${DEPNAME}_static PROPERTIES
