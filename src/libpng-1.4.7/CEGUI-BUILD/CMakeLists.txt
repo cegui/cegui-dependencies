@@ -16,8 +16,8 @@ if (WIN32)
 
     if (MSVC)
         set_target_properties(${DEPNAME} PROPERTIES
-            LINK_FLAGS "/DEF:${CMAKE_CURRENT_SOURCE_DIR}/../scripts/pngwin.def"
-            LINK_FLAGS_DEBUG "/DEF:${CMAKE_CURRENT_SOURCE_DIR}/../scripts/pngwin${CMAKE_DEBUG_POSTFIX}.def")
+            LINK_FLAGS_RELEASE "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/../scripts/pngwin.def\""
+            LINK_FLAGS_DEBUG   "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/../scripts/pngwin${CMAKE_DEBUG_POSTFIX}.def\"")
     else()
         if (CMAKE_BUILD_TYPE STREQUAL "Debug")
             list(APPEND SOURCES ../scripts/pngwin${CMAKE_DEBUG_POSTFIX}.def)
