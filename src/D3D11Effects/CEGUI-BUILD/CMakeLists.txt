@@ -1,26 +1,24 @@
 set(DEPNAME D3DX11Effects)
 
-set(DXSDK_DIR $ENV{DXSDK_DIR})
-string(REPLACE "\\" "/" DXSDK_DIR "${DXSDK_DIR}")
-
-set(SOURCEDIR "${DXSDK_DIR}/Samples/C++/Effects11")
-
 file(GLOB SOURCES
-	"${SOURCEDIR}/*.cpp"
-	"${SOURCEDIR}/*.inl")
+	"../*.cpp"
+	"../*.inl")
 
 set(HEADERS d3dx11effect.h)
+if( MINGW )
+    list( APPEND HEADERS d3d11-effects-mingw-supplements.h )
+endif()
 
 include_directories(
-    "${DXSDK_DIR}/include"
-	"${SOURCEDIR}/Inc"
-	"${SOURCEDIR}/Binary"
+	"../Inc"
+	"../Binary"
 )
 
-# This is not ideal, we should do something better than this!
-link_directories(
-    "${DXSDK_DIR}/Lib/x86"
-)
+if( MSVC )
+    set(DXSDK_DIR $ENV{DXSDK_DIR})
+    string(REPLACE "\\" "/" DXSDK_DIR "${DXSDK_DIR}")
+    include_directories( "${DXSDK_DIR}/Include" )
+endif()
 
 #
 # This doesn't really build as a DLL, and since I am not happy to distribute the
@@ -84,7 +82,7 @@ set_target_properties(${DEPNAME}_static PROPERTIES
 
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD 
-                       COMMAND ${CMAKE_COMMAND} -E copy "${SOURCEDIR}/Inc/${_H_FILE}"
+                       COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../Inc/${_H_FILE}"
                                                         "${CMAKE_BINARY_DIR}/dependencies/include/${_H_FILE}")
 endforeach()
 

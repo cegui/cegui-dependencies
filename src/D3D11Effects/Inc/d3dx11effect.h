@@ -12,6 +12,9 @@
 
 #include "d3d11.h" 
 #include "d3d11shader.h"
+#ifdef __MINGW32__
+    #include "d3d11-effects-mingw-supplements.h"
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // File contents:

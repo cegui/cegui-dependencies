@@ -8,7 +8,10 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "pchfx.h"
-#include <intsafe.h>
+
+#ifndef __MINGW32__
+	#include <intsafe.h>
+#endif
 
 namespace D3DX11Core
 {

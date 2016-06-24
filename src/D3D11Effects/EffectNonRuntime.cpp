@@ -13,6 +13,8 @@
 #include "pchfx.h"
 #include "SOParser.h"
 
+#include <cfloat>
+
 namespace D3DX11Effects
 {
 
@@ -1106,303 +1108,305 @@ HRESULT CEffect::BindToDevice(ID3D11Device *pDevice)
 {
     HRESULT hr = S_OK;
 
-    // Set new device
-    if (pDevice == NULL)
     {
-        DPF(0, "ID3DX11Effect: pDevice must point to a valid D3D11 device");
-        return D3DERR_INVALIDCALL;
-    }
-
-    if (m_pDevice != NULL)
-    {
-        DPF(0, "ID3DX11Effect: Internal error, rebinding effects to a new device is not supported");
-        return D3DERR_INVALIDCALL;
-    }
-
-    bool featureLevelGE11 = ( pDevice->GetFeatureLevel() >= D3D_FEATURE_LEVEL_11_0 );
-
-    pDevice->AddRef();
-    SAFE_RELEASE(m_pDevice);
-    m_pDevice = pDevice;
-    VH( m_pDevice->CreateClassLinkage( &m_pClassLinkage ) );
-
-    // Create all constant buffers
-    SConstantBuffer *pCB = m_pCBs;
-    SConstantBuffer *pCBLast = m_pCBs + m_CBCount;
-    for(; pCB != pCBLast; pCB++)
-    {
-        SAFE_RELEASE(pCB->pD3DObject);
-        SAFE_RELEASE(pCB->TBuffer.pShaderResource);
-
-        // This is a CBuffer
-        if (pCB->Size > 0)
+        // Set new device
+        if (pDevice == NULL)
         {
-            if (pCB->IsTBuffer)
+            DPF(0, "ID3DX11Effect: pDevice must point to a valid D3D11 device");
+            return D3DERR_INVALIDCALL;
+        }
+
+        if (m_pDevice != NULL)
+        {
+            DPF(0, "ID3DX11Effect: Internal error, rebinding effects to a new device is not supported");
+            return D3DERR_INVALIDCALL;
+        }
+
+        bool featureLevelGE11 = ( pDevice->GetFeatureLevel() >= D3D_FEATURE_LEVEL_11_0 );
+
+        pDevice->AddRef();
+        SAFE_RELEASE(m_pDevice);
+        m_pDevice = pDevice;
+        VH( m_pDevice->CreateClassLinkage( &m_pClassLinkage ) );
+
+        // Create all constant buffers
+        SConstantBuffer *pCB = m_pCBs;
+        SConstantBuffer *pCBLast = m_pCBs + m_CBCount;
+        for(; pCB != pCBLast; pCB++)
+        {
+            SAFE_RELEASE(pCB->pD3DObject);
+            SAFE_RELEASE(pCB->TBuffer.pShaderResource);
+
+            // This is a CBuffer
+            if (pCB->Size > 0)
             {
-                D3D11_BUFFER_DESC bufDesc;
-                // size is always register aligned
-                bufDesc.ByteWidth = pCB->Size;
-                bufDesc.Usage = D3D11_USAGE_DEFAULT;
-                bufDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-                bufDesc.CPUAccessFlags = 0;
-                bufDesc.MiscFlags = 0;
+                if (pCB->IsTBuffer)
+                {
+                    D3D11_BUFFER_DESC bufDesc;
+                    // size is always register aligned
+                    bufDesc.ByteWidth = pCB->Size;
+                    bufDesc.Usage = D3D11_USAGE_DEFAULT;
+                    bufDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+                    bufDesc.CPUAccessFlags = 0;
+                    bufDesc.MiscFlags = 0;
 
-                VH( pDevice->CreateBuffer( &bufDesc, NULL, &pCB->pD3DObject) );
-                
-                D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
-                viewDesc.Format = DXGI_FORMAT_R32G32B32A32_UINT;
-                viewDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
-                viewDesc.Buffer.ElementOffset = 0;
-                viewDesc.Buffer.ElementWidth = pCB->Size / SType::c_RegisterSize;
+                    VH( pDevice->CreateBuffer( &bufDesc, NULL, &pCB->pD3DObject) );
 
-                VH( pDevice->CreateShaderResourceView( pCB->pD3DObject, &viewDesc, &pCB->TBuffer.pShaderResource) );
+                    D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
+                    viewDesc.Format = DXGI_FORMAT_R32G32B32A32_UINT;
+                    viewDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+                    viewDesc.Buffer.ElementOffset = 0;
+                    viewDesc.Buffer.ElementWidth = pCB->Size / SType::c_RegisterSize;
+
+                    VH( pDevice->CreateShaderResourceView( pCB->pD3DObject, &viewDesc, &pCB->TBuffer.pShaderResource) );
+                }
+                else
+                {
+                    D3D11_BUFFER_DESC bufDesc;
+                    // size is always register aligned
+                    bufDesc.ByteWidth = pCB->Size;
+                    bufDesc.Usage = D3D11_USAGE_DEFAULT;
+                    bufDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+                    bufDesc.CPUAccessFlags = 0;
+                    bufDesc.MiscFlags = 0;
+
+                    VH( pDevice->CreateBuffer( &bufDesc, NULL, &pCB->pD3DObject) );
+                    pCB->TBuffer.pShaderResource = NULL;
+                }
+
+                pCB->IsDirty = TRUE;
             }
             else
             {
-                D3D11_BUFFER_DESC bufDesc;
-                // size is always register aligned
-                bufDesc.ByteWidth = pCB->Size;
-                bufDesc.Usage = D3D11_USAGE_DEFAULT;
-                bufDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-                bufDesc.CPUAccessFlags = 0;
-                bufDesc.MiscFlags = 0;
-
-                VH( pDevice->CreateBuffer( &bufDesc, NULL, &pCB->pD3DObject) );
-                pCB->TBuffer.pShaderResource = NULL;
-            }
-
-            pCB->IsDirty = TRUE;
-        }
-        else
-        {
-            pCB->IsDirty = FALSE;
-        }
-    }
-
-    // Create all RasterizerStates
-    SRasterizerBlock *pRB = m_pRasterizerBlocks;
-    SRasterizerBlock *pRBLast = m_pRasterizerBlocks + m_RasterizerBlockCount;
-    for(; pRB != pRBLast; pRB++)
-    {
-        SAFE_RELEASE(pRB->pRasterizerObject);
-        if( SUCCEEDED( m_pDevice->CreateRasterizerState( &pRB->BackingStore, &pRB->pRasterizerObject) ) )
-            pRB->IsValid = TRUE;
-        else
-            pRB->IsValid = FALSE;
-    }
-
-    // Create all DepthStencils
-    SDepthStencilBlock *pDS = m_pDepthStencilBlocks;
-    SDepthStencilBlock *pDSLast = m_pDepthStencilBlocks + m_DepthStencilBlockCount;
-    for(; pDS != pDSLast; pDS++)
-    {
-        SAFE_RELEASE(pDS->pDSObject);
-        if( SUCCEEDED( m_pDevice->CreateDepthStencilState( &pDS->BackingStore, &pDS->pDSObject) ) )
-            pDS->IsValid = TRUE;
-        else
-            pDS->IsValid = FALSE;
-    }
-
-    // Create all BlendStates
-    SBlendBlock *pBlend = m_pBlendBlocks;
-    SBlendBlock *pBlendLast = m_pBlendBlocks + m_BlendBlockCount;
-    for(; pBlend != pBlendLast; pBlend++)
-    {
-        SAFE_RELEASE(pBlend->pBlendObject);
-        if( SUCCEEDED( m_pDevice->CreateBlendState( &pBlend->BackingStore, &pBlend->pBlendObject ) ) )
-            pBlend->IsValid = TRUE;
-        else
-            pBlend->IsValid = FALSE;
-    }
-
-    // Create all Samplers
-    SSamplerBlock *pSampler = m_pSamplerBlocks;
-    SSamplerBlock *pSamplerLast = m_pSamplerBlocks + m_SamplerBlockCount;
-    for(; pSampler != pSamplerLast; pSampler++)
-    {
-        SAFE_RELEASE(pSampler->pD3DObject);
-
-        VH( m_pDevice->CreateSamplerState( &pSampler->BackingStore.SamplerDesc, &pSampler->pD3DObject) );
-    }
-
-    // Create all shaders
-    ID3D11ClassLinkage* neededClassLinkage = featureLevelGE11 ? m_pClassLinkage : NULL;
-    SShaderBlock *pShader = m_pShaderBlocks;
-    SShaderBlock *pShaderLast = m_pShaderBlocks + m_ShaderBlockCount;
-    for(; pShader != pShaderLast; pShader++)
-    {
-        SAFE_RELEASE(pShader->pD3DObject);
-
-        if (NULL == pShader->pReflectionData)
-        {
-            // NULL shader. It's one of these:
-            // PixelShader ps;
-            // or
-            // SetPixelShader( NULL );
-            continue;
-        }
-        
-        if (pShader->pReflectionData->pStreamOutDecls[0] || pShader->pReflectionData->pStreamOutDecls[1] || 
-            pShader->pReflectionData->pStreamOutDecls[2] || pShader->pReflectionData->pStreamOutDecls[3] )
-        {
-            // This is a geometry shader, process it's data
-            CSOParser soParser;
-            VH( soParser.Parse(pShader->pReflectionData->pStreamOutDecls) );
-            UINT strides[4];
-            soParser.GetStrides( strides );
-            hr = m_pDevice->CreateGeometryShaderWithStreamOutput((UINT*) pShader->pReflectionData->pBytecode,
-                                                                pShader->pReflectionData->BytecodeLength,
-                                                                soParser.GetDeclArray(),
-                                                                soParser.GetDeclCount(),
-                                                                strides,
-                                                                featureLevelGE11 ? 4 : 1,
-                                                                pShader->pReflectionData->RasterizedStream,
-                                                                neededClassLinkage,
-                                                                (ID3D11GeometryShader**) &pShader->pD3DObject);
-            if (FAILED(hr))
-            {
-                DPF(1, "ID3DX11Effect::Load - failed to create GeometryShader with StreamOutput decl: \"%s\"", soParser.GetErrorString() );
-                pShader->IsValid = FALSE;
-                hr = S_OK;
+                pCB->IsDirty = FALSE;
             }
         }
-        else
+
+        // Create all RasterizerStates
+        SRasterizerBlock *pRB = m_pRasterizerBlocks;
+        SRasterizerBlock *pRBLast = m_pRasterizerBlocks + m_RasterizerBlockCount;
+        for(; pRB != pRBLast; pRB++)
         {
-            // This is a regular shader
-            if( pShader->pReflectionData->RasterizedStream == D3D11_SO_NO_RASTERIZED_STREAM )
-                pShader->IsValid = FALSE;
-            else 
+            SAFE_RELEASE(pRB->pRasterizerObject);
+            if( SUCCEEDED( m_pDevice->CreateRasterizerState( &pRB->BackingStore, &pRB->pRasterizerObject) ) )
+                pRB->IsValid = TRUE;
+            else
+                pRB->IsValid = FALSE;
+        }
+
+        // Create all DepthStencils
+        SDepthStencilBlock *pDS = m_pDepthStencilBlocks;
+        SDepthStencilBlock *pDSLast = m_pDepthStencilBlocks + m_DepthStencilBlockCount;
+        for(; pDS != pDSLast; pDS++)
+        {
+            SAFE_RELEASE(pDS->pDSObject);
+            if( SUCCEEDED( m_pDevice->CreateDepthStencilState( &pDS->BackingStore, &pDS->pDSObject) ) )
+                pDS->IsValid = TRUE;
+            else
+                pDS->IsValid = FALSE;
+        }
+
+        // Create all BlendStates
+        SBlendBlock *pBlend = m_pBlendBlocks;
+        SBlendBlock *pBlendLast = m_pBlendBlocks + m_BlendBlockCount;
+        for(; pBlend != pBlendLast; pBlend++)
+        {
+            SAFE_RELEASE(pBlend->pBlendObject);
+            if( SUCCEEDED( m_pDevice->CreateBlendState( &pBlend->BackingStore, &pBlend->pBlendObject ) ) )
+                pBlend->IsValid = TRUE;
+            else
+                pBlend->IsValid = FALSE;
+        }
+
+        // Create all Samplers
+        SSamplerBlock *pSampler = m_pSamplerBlocks;
+        SSamplerBlock *pSamplerLast = m_pSamplerBlocks + m_SamplerBlockCount;
+        for(; pSampler != pSamplerLast; pSampler++)
+        {
+            SAFE_RELEASE(pSampler->pD3DObject);
+
+            VH( m_pDevice->CreateSamplerState( &pSampler->BackingStore.SamplerDesc, &pSampler->pD3DObject) );
+        }
+
+        // Create all shaders
+        ID3D11ClassLinkage* neededClassLinkage = featureLevelGE11 ? m_pClassLinkage : NULL;
+        SShaderBlock *pShader = m_pShaderBlocks;
+        SShaderBlock *pShaderLast = m_pShaderBlocks + m_ShaderBlockCount;
+        for(; pShader != pShaderLast; pShader++)
+        {
+            SAFE_RELEASE(pShader->pD3DObject);
+
+            if (NULL == pShader->pReflectionData)
             {
-                if( FAILED( (m_pDevice->*(pShader->pVT->pCreateShader))( (UINT *) pShader->pReflectionData->pBytecode, pShader->pReflectionData->BytecodeLength, neededClassLinkage, &pShader->pD3DObject) ) )
+                // NULL shader. It's one of these:
+                // PixelShader ps;
+                // or
+                // SetPixelShader( NULL );
+                continue;
+            }
+
+            if (pShader->pReflectionData->pStreamOutDecls[0] || pShader->pReflectionData->pStreamOutDecls[1] || 
+                pShader->pReflectionData->pStreamOutDecls[2] || pShader->pReflectionData->pStreamOutDecls[3] )
+            {
+                // This is a geometry shader, process it's data
+                CSOParser soParser;
+                VH( soParser.Parse(pShader->pReflectionData->pStreamOutDecls) );
+                UINT strides[4];
+                soParser.GetStrides( strides );
+                hr = m_pDevice->CreateGeometryShaderWithStreamOutput((UINT*) pShader->pReflectionData->pBytecode,
+                                                                    pShader->pReflectionData->BytecodeLength,
+                                                                    soParser.GetDeclArray(),
+                                                                    soParser.GetDeclCount(),
+                                                                    strides,
+                                                                    featureLevelGE11 ? 4 : 1,
+                                                                    pShader->pReflectionData->RasterizedStream,
+                                                                    neededClassLinkage,
+                                                                    (ID3D11GeometryShader**) &pShader->pD3DObject);
+                if (FAILED(hr))
                 {
-                    DPF(1, "ID3DX11Effect::Load - failed to create shader" );
+                    DPF(1, "ID3DX11Effect::Load - failed to create GeometryShader with StreamOutput decl: \"%s\"", soParser.GetErrorString() );
                     pShader->IsValid = FALSE;
-                }
-            }
-        }
-
-        // Update all dependency pointers
-        VH( pShader->OnDeviceBind() );
-    }
-
-    // Initialize the member data pointers for all variables
-    UINT CurMemberData = 0;
-    for (UINT i = 0; i < m_VariableCount; ++ i)
-    {
-        if( m_pVariables[i].pMemberData )
-        {
-            if( m_pVariables[i].pType->IsClassInstance() )
-            {
-                for (UINT j = 0; j < max(m_pVariables[i].pType->Elements,1); ++j)
-                {
-                    D3DXASSERT( CurMemberData < m_MemberDataCount );
-                    ID3D11ClassInstance** ppCI = &(m_pVariables[i].pMemberData + j)->Data.pD3DClassInstance;
-                    (m_pVariables[i].pMemberData + j)->Type = MDT_ClassInstance;
-                    (m_pVariables[i].pMemberData + j)->Data.pD3DClassInstance = NULL;
-                    if( m_pVariables[i].pType->TotalSize > 0 )
-                    {
-                        // ignore failures in GetClassInstance;
-                        m_pClassLinkage->GetClassInstance( m_pVariables[i].pName, j, ppCI );
-                    }
-                    else
-                    {
-                        // The HLSL compiler optimizes out zero-sized classes, so we have to create class instances from scratch
-                        if( FAILED( m_pClassLinkage->CreateClassInstance( m_pVariables[i].pType->pTypeName, 0, 0, 0, 0, ppCI ) ) )
-                        {
-                            DPF(0, "ID3DX11Effect: Out of memory while trying to create new class instance interface");
-                        }
-                    }
-                    CurMemberData++;
-                }
-            }
-            else if( m_pVariables[i].pType->IsStateBlockObject() )
-            {
-                for (UINT j = 0; j < max(m_pVariables[i].pType->Elements,1); ++j)
-                {
-                    switch( m_pVariables[i].pType->ObjectType )
-                    {
-                    case EOT_Blend:
-                        (m_pVariables[i].pMemberData + j)->Type = MDT_BlendState;
-                        (m_pVariables[i].pMemberData + j)->Data.pD3DEffectsManagedBlendState = NULL;
-                        break;
-                    case EOT_Rasterizer:
-                        (m_pVariables[i].pMemberData + j)->Type = MDT_RasterizerState;
-                        (m_pVariables[i].pMemberData + j)->Data.pD3DEffectsManagedRasterizerState = NULL;
-                        break;
-                    case EOT_DepthStencil:
-                        (m_pVariables[i].pMemberData + j)->Type = MDT_DepthStencilState;
-                        (m_pVariables[i].pMemberData + j)->Data.pD3DEffectsManagedDepthStencilState = NULL;
-                        break;
-                    case EOT_Sampler:
-                        (m_pVariables[i].pMemberData + j)->Type = MDT_SamplerState;
-                        (m_pVariables[i].pMemberData + j)->Data.pD3DEffectsManagedSamplerState = NULL;
-                        break;
-                    default:
-                        VB( FALSE );
-                    }
-                    CurMemberData++;
+                    hr = S_OK;
                 }
             }
             else
             {
-                VB( FALSE );
+                // This is a regular shader
+                if( pShader->pReflectionData->RasterizedStream == D3D11_SO_NO_RASTERIZED_STREAM )
+                    pShader->IsValid = FALSE;
+                else 
+                {
+                    if( FAILED( (m_pDevice->*(pShader->pVT->pCreateShader))( (UINT *) pShader->pReflectionData->pBytecode, pShader->pReflectionData->BytecodeLength, neededClassLinkage, &pShader->pD3DObject) ) )
+                    {
+                        DPF(1, "ID3DX11Effect::Load - failed to create shader" );
+                        pShader->IsValid = FALSE;
+                    }
+                }
             }
+
+            // Update all dependency pointers
+            VH( pShader->OnDeviceBind() );
         }
-    }
-    for(pCB = m_pCBs; pCB != pCBLast; pCB++)
-    {
-        (pCB->pMemberData + 0)->Type = MDT_Buffer;
-        (pCB->pMemberData + 0)->Data.pD3DEffectsManagedConstantBuffer = NULL;
-        CurMemberData++;
-        (pCB->pMemberData + 1)->Type = MDT_ShaderResourceView;
-        (pCB->pMemberData + 1)->Data.pD3DEffectsManagedTextureBuffer = NULL;
-        CurMemberData++;
-    }
 
-
-    // Determine which techniques and passes are known to be invalid
-    for( UINT iGroup=0; iGroup < m_GroupCount; iGroup++ )
-    {
-        SGroup* pGroup = &m_pGroups[iGroup];
-        pGroup->InitiallyValid = TRUE;
-
-        for( UINT iTech=0; iTech < pGroup->TechniqueCount; iTech++ )
+        // Initialize the member data pointers for all variables
+        UINT CurMemberData = 0;
+        for (UINT i = 0; i < m_VariableCount; ++ i)
         {
-            STechnique* pTechnique = &pGroup->pTechniques[iTech];
-            pTechnique->InitiallyValid = TRUE;
-           
-            for( UINT iPass = 0; iPass < pTechnique->PassCount; iPass++ )
+            if( m_pVariables[i].pMemberData )
             {
-                SPassBlock* pPass = &pTechnique->pPasses[iPass];
-                pPass->InitiallyValid = TRUE;
-
-                if( pPass->BackingStore.pBlendBlock != NULL && !pPass->BackingStore.pBlendBlock->IsValid )
-                    pPass->InitiallyValid = FALSE;
-                if( pPass->BackingStore.pDepthStencilBlock != NULL && !pPass->BackingStore.pDepthStencilBlock->IsValid )
-                    pPass->InitiallyValid = FALSE;
-                if( pPass->BackingStore.pRasterizerBlock != NULL && !pPass->BackingStore.pRasterizerBlock->IsValid )
-                    pPass->InitiallyValid = FALSE;
-                if( pPass->BackingStore.pVertexShaderBlock != NULL && !pPass->BackingStore.pVertexShaderBlock->IsValid )
-                    pPass->InitiallyValid = FALSE;
-                if( pPass->BackingStore.pPixelShaderBlock != NULL && !pPass->BackingStore.pPixelShaderBlock->IsValid )
-                    pPass->InitiallyValid = FALSE;
-                if( pPass->BackingStore.pGeometryShaderBlock != NULL && !pPass->BackingStore.pGeometryShaderBlock->IsValid )
-                    pPass->InitiallyValid = FALSE;
-                if( pPass->BackingStore.pHullShaderBlock != NULL && !pPass->BackingStore.pHullShaderBlock->IsValid )
-                    pPass->InitiallyValid = FALSE;
-                if( pPass->BackingStore.pDomainShaderBlock != NULL && !pPass->BackingStore.pDomainShaderBlock->IsValid )
-                    pPass->InitiallyValid = FALSE;
-                if( pPass->BackingStore.pComputeShaderBlock != NULL && !pPass->BackingStore.pComputeShaderBlock->IsValid )
-                    pPass->InitiallyValid = FALSE;
-
-                pTechnique->InitiallyValid &= pPass->InitiallyValid;
+                if( m_pVariables[i].pType->IsClassInstance() )
+                {
+                    for (UINT j = 0; j < max(m_pVariables[i].pType->Elements,1); ++j)
+                    {
+                        D3DXASSERT( CurMemberData < m_MemberDataCount );
+                        ID3D11ClassInstance** ppCI = &(m_pVariables[i].pMemberData + j)->Data.pD3DClassInstance;
+                        (m_pVariables[i].pMemberData + j)->Type = MDT_ClassInstance;
+                        (m_pVariables[i].pMemberData + j)->Data.pD3DClassInstance = NULL;
+                        if( m_pVariables[i].pType->TotalSize > 0 )
+                        {
+                            // ignore failures in GetClassInstance;
+                            m_pClassLinkage->GetClassInstance( m_pVariables[i].pName, j, ppCI );
+                        }
+                        else
+                        {
+                            // The HLSL compiler optimizes out zero-sized classes, so we have to create class instances from scratch
+                            if( FAILED( m_pClassLinkage->CreateClassInstance( m_pVariables[i].pType->pTypeName, 0, 0, 0, 0, ppCI ) ) )
+                            {
+                                DPF(0, "ID3DX11Effect: Out of memory while trying to create new class instance interface");
+                            }
+                        }
+                        CurMemberData++;
+                    }
+                }
+                else if( m_pVariables[i].pType->IsStateBlockObject() )
+                {
+                    for (UINT j = 0; j < max(m_pVariables[i].pType->Elements,1); ++j)
+                    {
+                        switch( m_pVariables[i].pType->ObjectType )
+                        {
+                        case EOT_Blend:
+                            (m_pVariables[i].pMemberData + j)->Type = MDT_BlendState;
+                            (m_pVariables[i].pMemberData + j)->Data.pD3DEffectsManagedBlendState = NULL;
+                            break;
+                        case EOT_Rasterizer:
+                            (m_pVariables[i].pMemberData + j)->Type = MDT_RasterizerState;
+                            (m_pVariables[i].pMemberData + j)->Data.pD3DEffectsManagedRasterizerState = NULL;
+                            break;
+                        case EOT_DepthStencil:
+                            (m_pVariables[i].pMemberData + j)->Type = MDT_DepthStencilState;
+                            (m_pVariables[i].pMemberData + j)->Data.pD3DEffectsManagedDepthStencilState = NULL;
+                            break;
+                        case EOT_Sampler:
+                            (m_pVariables[i].pMemberData + j)->Type = MDT_SamplerState;
+                            (m_pVariables[i].pMemberData + j)->Data.pD3DEffectsManagedSamplerState = NULL;
+                            break;
+                        default:
+                            VB( FALSE );
+                        }
+                        CurMemberData++;
+                    }
+                }
+                else
+                {
+                    VB( FALSE );
+                }
             }
-            pGroup->InitiallyValid &= pTechnique->InitiallyValid;
+        }
+        for(pCB = m_pCBs; pCB != pCBLast; pCB++)
+        {
+            (pCB->pMemberData + 0)->Type = MDT_Buffer;
+            (pCB->pMemberData + 0)->Data.pD3DEffectsManagedConstantBuffer = NULL;
+            CurMemberData++;
+            (pCB->pMemberData + 1)->Type = MDT_ShaderResourceView;
+            (pCB->pMemberData + 1)->Data.pD3DEffectsManagedTextureBuffer = NULL;
+            CurMemberData++;
+        }
+
+
+        // Determine which techniques and passes are known to be invalid
+        for( UINT iGroup=0; iGroup < m_GroupCount; iGroup++ )
+        {
+            SGroup* pGroup = &m_pGroups[iGroup];
+            pGroup->InitiallyValid = TRUE;
+
+            for( UINT iTech=0; iTech < pGroup->TechniqueCount; iTech++ )
+            {
+                STechnique* pTechnique = &pGroup->pTechniques[iTech];
+                pTechnique->InitiallyValid = TRUE;
+
+                for( UINT iPass = 0; iPass < pTechnique->PassCount; iPass++ )
+                {
+                    SPassBlock* pPass = &pTechnique->pPasses[iPass];
+                    pPass->InitiallyValid = TRUE;
+
+                    if( pPass->BackingStore.pBlendBlock != NULL && !pPass->BackingStore.pBlendBlock->IsValid )
+                        pPass->InitiallyValid = FALSE;
+                    if( pPass->BackingStore.pDepthStencilBlock != NULL && !pPass->BackingStore.pDepthStencilBlock->IsValid )
+                        pPass->InitiallyValid = FALSE;
+                    if( pPass->BackingStore.pRasterizerBlock != NULL && !pPass->BackingStore.pRasterizerBlock->IsValid )
+                        pPass->InitiallyValid = FALSE;
+                    if( pPass->BackingStore.pVertexShaderBlock != NULL && !pPass->BackingStore.pVertexShaderBlock->IsValid )
+                        pPass->InitiallyValid = FALSE;
+                    if( pPass->BackingStore.pPixelShaderBlock != NULL && !pPass->BackingStore.pPixelShaderBlock->IsValid )
+                        pPass->InitiallyValid = FALSE;
+                    if( pPass->BackingStore.pGeometryShaderBlock != NULL && !pPass->BackingStore.pGeometryShaderBlock->IsValid )
+                        pPass->InitiallyValid = FALSE;
+                    if( pPass->BackingStore.pHullShaderBlock != NULL && !pPass->BackingStore.pHullShaderBlock->IsValid )
+                        pPass->InitiallyValid = FALSE;
+                    if( pPass->BackingStore.pDomainShaderBlock != NULL && !pPass->BackingStore.pDomainShaderBlock->IsValid )
+                        pPass->InitiallyValid = FALSE;
+                    if( pPass->BackingStore.pComputeShaderBlock != NULL && !pPass->BackingStore.pComputeShaderBlock->IsValid )
+                        pPass->InitiallyValid = FALSE;
+
+                    pTechnique->InitiallyValid &= pPass->InitiallyValid;
+                }
+                pGroup->InitiallyValid &= pTechnique->InitiallyValid;
+            }
         }
     }
 
-lExit:
-    return hr;
+    lExit:
+        return hr;
 }
 
 // FindVariableByName, plus an understanding of literal indices
@@ -1866,60 +1870,62 @@ HRESULT CEffect::CopyOptimizedTypePool( CEffect* pEffectSource, CPointerMappingT
     HRESULT hr = S_OK;
     CEffectHeap* pOptimizedTypeHeap = NULL;
 
-    D3DXASSERT( pEffectSource->m_pOptimizedTypeHeap != NULL );
-    D3DXASSERT( m_pTypePool == NULL );
-    D3DXASSERT( m_pStringPool == NULL );
-    D3DXASSERT( m_pPooledHeap == NULL );
-
-    VN( pOptimizedTypeHeap = NEW CEffectHeap );
-    VH( pOptimizedTypeHeap->ReserveMemory( pEffectSource->m_pOptimizedTypeHeap->GetSize() ) );
-    CPointerMappingTable::CIterator mapIter;
-
-    // first pass: move types over, build mapping table
-    BYTE* pReadTypes = pEffectSource->m_pOptimizedTypeHeap->GetDataStart();
-    while( pEffectSource->m_pOptimizedTypeHeap->IsInHeap( pReadTypes ) )
     {
-        SPointerMapping ptrMapping;
-        SType *pType;
-        UINT moveSize;
+        D3DXASSERT( pEffectSource->m_pOptimizedTypeHeap != NULL );
+        D3DXASSERT( m_pTypePool == NULL );
+        D3DXASSERT( m_pStringPool == NULL );
+        D3DXASSERT( m_pPooledHeap == NULL );
 
-        ptrMapping.pOld = ptrMapping.pNew = pReadTypes;
-        moveSize = sizeof(SType);
-        VH( pOptimizedTypeHeap->MoveData(&ptrMapping.pNew, moveSize) );
-        pReadTypes += moveSize;
+        VN( pOptimizedTypeHeap = NEW CEffectHeap );
+        VH( pOptimizedTypeHeap->ReserveMemory( pEffectSource->m_pOptimizedTypeHeap->GetSize() ) );
+        CPointerMappingTable::CIterator mapIter;
 
-        pType = (SType *) ptrMapping.pNew;
-
-        // if this is a struct, move its members to the newly allocated space
-        if (EVT_Struct == pType->VarType)
+        // first pass: move types over, build mapping table
+        BYTE* pReadTypes = pEffectSource->m_pOptimizedTypeHeap->GetDataStart();
+        while( pEffectSource->m_pOptimizedTypeHeap->IsInHeap( pReadTypes ) )
         {
-            moveSize = pType->StructType.Members * sizeof(SVariable);
-            VH( pOptimizedTypeHeap->MoveData((void **)&pType->StructType.pMembers, moveSize) );
+            SPointerMapping ptrMapping;
+            SType *pType;
+            UINT moveSize;
+
+            ptrMapping.pOld = ptrMapping.pNew = pReadTypes;
+            moveSize = sizeof(SType);
+            VH( pOptimizedTypeHeap->MoveData(&ptrMapping.pNew, moveSize) );
             pReadTypes += moveSize;
+
+            pType = (SType *) ptrMapping.pNew;
+
+            // if this is a struct, move its members to the newly allocated space
+            if (EVT_Struct == pType->VarType)
+            {
+                moveSize = pType->StructType.Members * sizeof(SVariable);
+                VH( pOptimizedTypeHeap->MoveData((void **)&pType->StructType.pMembers, moveSize) );
+                pReadTypes += moveSize;
+            }
+
+            VH( mappingTableTypes.AddValueWithHash(ptrMapping, ptrMapping.Hash()) );
         }
 
-        VH( mappingTableTypes.AddValueWithHash(ptrMapping, ptrMapping.Hash()) );
-    }
-
-    // second pass: fixup structure member & name pointers
-    for (mappingTableTypes.GetFirstEntry(&mapIter); !mappingTableTypes.PastEnd(&mapIter); mappingTableTypes.GetNextEntry(&mapIter))
-    {
-        SPointerMapping ptrMapping = mapIter.GetData();
-
-        // Uncomment to print type mapping
-        //DPF(0, "type: 0x%x : 0x%x", (UINT_PTR)ptrMapping.pOld, (UINT_PTR)ptrMapping.pNew );
-
-        SType *pType = (SType *) ptrMapping.pNew;
-
-        // if this is a struct, fix up its members' pointers
-        if (EVT_Struct == pType->VarType)
+        // second pass: fixup structure member & name pointers
+        for (mappingTableTypes.GetFirstEntry(&mapIter); !mappingTableTypes.PastEnd(&mapIter); mappingTableTypes.GetNextEntry(&mapIter))
         {
-            for (UINT i = 0; i < pType->StructType.Members; ++ i)
+            SPointerMapping ptrMapping = mapIter.GetData();
+
+            // Uncomment to print type mapping
+            //DPF(0, "type: 0x%x : 0x%x", (UINT_PTR)ptrMapping.pOld, (UINT_PTR)ptrMapping.pNew );
+
+            SType *pType = (SType *) ptrMapping.pNew;
+
+            // if this is a struct, fix up its members' pointers
+            if (EVT_Struct == pType->VarType)
             {
-                VH( RemapType((SType**)&pType->StructType.pMembers[i].pType, &mappingTableTypes) );
+                for (UINT i = 0; i < pType->StructType.Members; ++ i)
+                {
+                    VH( RemapType((SType**)&pType->StructType.pMembers[i].pType, &mappingTableTypes) );
+                }
             }
         }
-    }  
+    }
 
 lExit:
     return hr;
@@ -2162,60 +2168,63 @@ HRESULT CEffect::OptimizeTypes(CPointerMappingTable *pMappingTable, bool Cloning
     HRESULT hr = S_OK;
     UINT  i;
 
-    // find all child types, point them to the new location
-    for (i = 0; i < m_VariableCount; ++ i)
     {
-        VH( RemapType((SType**)&m_pVariables[i].pType, pMappingTable) );
-    }
+        // find all child types, point them to the new location
+        for (i = 0; i < m_VariableCount; ++ i)
+        {
+            VH( RemapType((SType**)&m_pVariables[i].pType, pMappingTable) );
+        }
 
-    UINT Members = m_pMemberInterfaces.GetSize();
-    for( i=0; i < Members; i++ )
-    {
-        if( m_pMemberInterfaces[i] != NULL )
+        UINT Members = m_pMemberInterfaces.GetSize();
+        for( i=0; i < Members; i++ )
         {
-            VH( RemapType((SType**)&m_pMemberInterfaces[i]->pType, pMappingTable) );
+            if( m_pMemberInterfaces[i] != NULL )
+            {
+                VH( RemapType((SType**)&m_pMemberInterfaces[i]->pType, pMappingTable) );
+            }
         }
-    }
 
-    // when cloning, there may be annotations
-    if( Cloning )
-    {
-        for (UINT iVar = 0; iVar < m_VariableCount; ++ iVar)
+        // when cloning, there may be annotations
+        if( Cloning )
         {
-            for(i = 0; i < m_pVariables[iVar].AnnotationCount; ++ i )
+            for (UINT iVar = 0; iVar < m_VariableCount; ++ iVar)
             {
-                VH( RemapType((SType**)&m_pVariables[iVar].pAnnotations[i].pType, pMappingTable) );
-            }
-        }
-        for (UINT iCB = 0; iCB < m_CBCount; ++ iCB)
-        {
-            for(i = 0; i < m_pCBs[iCB].AnnotationCount; ++ i )
-            {
-                VH( RemapType((SType**)&m_pCBs[iCB].pAnnotations[i].pType, pMappingTable) );
-            }
-        }
-        for (UINT iGroup = 0; iGroup < m_GroupCount; ++ iGroup)
-        {
-            for(i = 0; i < m_pGroups[iGroup].AnnotationCount; ++ i )
-            {
-                VH( RemapType((SType**)&m_pGroups[iGroup].pAnnotations[i].pType, pMappingTable) );
-            }
-            for(UINT iTech = 0; iTech < m_pGroups[iGroup].TechniqueCount; ++ iTech )
-            {
-                for(i = 0; i < m_pGroups[iGroup].pTechniques[iTech].AnnotationCount; ++ i )
+                for(i = 0; i < m_pVariables[iVar].AnnotationCount; ++ i )
                 {
-                    VH( RemapType((SType**)&m_pGroups[iGroup].pTechniques[iTech].pAnnotations[i].pType, pMappingTable) );
+                    VH( RemapType((SType**)&m_pVariables[iVar].pAnnotations[i].pType, pMappingTable) );
                 }
-                for(UINT iPass = 0; iPass < m_pGroups[iGroup].pTechniques[iTech].PassCount; ++ iPass )
+            }
+            for (UINT iCB = 0; iCB < m_CBCount; ++ iCB)
+            {
+                for(i = 0; i < m_pCBs[iCB].AnnotationCount; ++ i )
                 {
-                    for(i = 0; i < m_pGroups[iGroup].pTechniques[iTech].pPasses[iPass].AnnotationCount; ++ i )
+                    VH( RemapType((SType**)&m_pCBs[iCB].pAnnotations[i].pType, pMappingTable) );
+                }
+            }
+            for (UINT iGroup = 0; iGroup < m_GroupCount; ++ iGroup)
+            {
+                for(i = 0; i < m_pGroups[iGroup].AnnotationCount; ++ i )
+                {
+                    VH( RemapType((SType**)&m_pGroups[iGroup].pAnnotations[i].pType, pMappingTable) );
+                }
+                for(UINT iTech = 0; iTech < m_pGroups[iGroup].TechniqueCount; ++ iTech )
+                {
+                    for(i = 0; i < m_pGroups[iGroup].pTechniques[iTech].AnnotationCount; ++ i )
                     {
-                        VH( RemapType((SType**)&m_pGroups[iGroup].pTechniques[iTech].pPasses[iPass].pAnnotations[i].pType, pMappingTable) );
+                        VH( RemapType((SType**)&m_pGroups[iGroup].pTechniques[iTech].pAnnotations[i].pType, pMappingTable) );
+                    }
+                    for(UINT iPass = 0; iPass < m_pGroups[iGroup].pTechniques[iTech].PassCount; ++ iPass )
+                    {
+                        for(i = 0; i < m_pGroups[iGroup].pTechniques[iTech].pPasses[iPass].AnnotationCount; ++ i )
+                        {
+                            VH( RemapType((SType**)&m_pGroups[iGroup].pTechniques[iTech].pPasses[iPass].pAnnotations[i].pType, pMappingTable) );
+                        }
                     }
                 }
             }
         }
     }
+
 lExit:
     return hr;
 }
