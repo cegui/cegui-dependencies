@@ -7,6 +7,8 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
+#include "../pchfx.h"
+
 #pragma once
 
 namespace D3DX11Effects
@@ -105,56 +107,58 @@ protected:
     {
         HRESULT hr = S_OK;
 
-        m_pError[0] = 0;
-
-        if( pString == NULL )
-            return S_OK;
-
-        UINT len = (UINT)strlen( pString );
-        if( len == 0 )
-            return S_OK;
-
-        SAFE_DELETE_ARRAY( m_SemanticString[Stream] );
-        VN( m_SemanticString[Stream] = NEW char[len + 1] );
-        StringCchCopyA( m_SemanticString[Stream], len + 1, pString );
-
-        LPSTR pSemantic = m_SemanticString[Stream];
-
-        while( TRUE )
         {
-            // Each decl entry is delimited by a semi-colon
-            LPSTR pSemi = strchr( pSemantic, ';' );
+                m_pError[0] = 0;
 
-            // strip leading and trailing spaces
-            LPSTR pEnd;
-            if( pSemi != NULL )
-            {
-                *pSemi = '\0';
-                pEnd = pSemi - 1;
-            }
-            else
-            {
-                pEnd = pSemantic + strlen( pSemantic );
-            }
-            while( isspace( (unsigned char)*pSemantic ) )
-                pSemantic++;
-            while( pEnd > pSemantic && isspace( (unsigned char)*pEnd ) )
-            {
-                *pEnd = '\0';
-                pEnd--;
-            }
+                if( pString == NULL )
+                    return S_OK;
 
-            if( *pSemantic != '\0' )
-            {
-                VH( AddSemantic( pSemantic ) );
-                m_newEntry.Stream = Stream;
+                UINT len = (UINT)strlen( pString );
+                if( len == 0 )
+                    return S_OK;
 
-                VH( m_vDecls.Add( m_newEntry ) );
+                SAFE_DELETE_ARRAY( m_SemanticString[Stream] );
+                VN( m_SemanticString[Stream] = NEW char[len + 1] );
+                StringCchCopyA( m_SemanticString[Stream], len + 1, pString );
+
+                LPSTR pSemantic = m_SemanticString[Stream];
+
+                while( TRUE )
+                {
+                    // Each decl entry is delimited by a semi-colon
+                    LPSTR pSemi = strchr( pSemantic, ';' );
+
+                    // strip leading and trailing spaces
+                    LPSTR pEnd;
+                    if( pSemi != NULL )
+                    {
+                        *pSemi = '\0';
+                        pEnd = pSemi - 1;
+                    }
+                    else
+                    {
+                        pEnd = pSemantic + strlen( pSemantic );
+                    }
+                    while( isspace( (unsigned char)*pSemantic ) )
+                        pSemantic++;
+                    while( pEnd > pSemantic && isspace( (unsigned char)*pEnd ) )
+                    {
+                        *pEnd = '\0';
+                        pEnd--;
+                    }
+
+                    if( *pSemantic != '\0' )
+                    {
+                        VH( AddSemantic( pSemantic ) );
+                        m_newEntry.Stream = Stream;
+
+                        VH( m_vDecls.Add( m_newEntry ) );
+                    }
+                    if( pSemi == NULL )
+                        break;
+                    pSemantic = pSemi + 1;
+                }
             }
-            if( pSemi == NULL )
-                break;
-            pSemantic = pSemi + 1;
-        }
 
 lExit:
         return hr;
@@ -240,43 +244,45 @@ lExit:
         D3DXASSERT( ppSemantic && *ppSemantic );
 
         HRESULT hr = S_OK;
-        LPSTR pColon = strchr( *ppSemantic, ':' ); 
+        LPSTR pColon = strchr( *ppSemantic, ':' );
 
-        if( pColon == NULL )
-            return S_OK;
-
-        if( pColon == *ppSemantic )
         {
-            StringCchCopyA( m_pError, MAX_ERROR_SIZE,
-                           "ID3D11Effect::ParseSODecl - Invalid output slot" );
-            VH( E_FAIL );
-        }
+            if( pColon == NULL )
+                return S_OK;
 
-        *pColon = '\0';
-        int outputSlot = atoi( *ppSemantic );
-        if( outputSlot < 0 || outputSlot > 255 )
-        {
-            StringCchCopyA( m_pError, MAX_ERROR_SIZE,
-                           "ID3D11Effect::ParseSODecl - Invalid output slot" );
-            VH( E_FAIL );
-        }
-        m_newEntry.OutputSlot = (BYTE)outputSlot;
-
-        while( *ppSemantic < pColon )
-        {
-            if( !isdigit( (unsigned char)**ppSemantic ) )
+            if( pColon == *ppSemantic )
             {
-                StringCchPrintfA( m_pError, MAX_ERROR_SIZE, "ID3D11Effect::ParseSODecl - Non-digit '%c' in output slot", **ppSemantic );
+                StringCchCopyA( m_pError, MAX_ERROR_SIZE,
+                               "ID3D11Effect::ParseSODecl - Invalid output slot" );
                 VH( E_FAIL );
             }
+
+            *pColon = '\0';
+            int outputSlot = atoi( *ppSemantic );
+            if( outputSlot < 0 || outputSlot > 255 )
+            {
+                StringCchCopyA( m_pError, MAX_ERROR_SIZE,
+                               "ID3D11Effect::ParseSODecl - Invalid output slot" );
+                VH( E_FAIL );
+            }
+            m_newEntry.OutputSlot = (BYTE)outputSlot;
+
+            while( *ppSemantic < pColon )
+            {
+                if( !isdigit( (unsigned char)**ppSemantic ) )
+                {
+                    StringCchPrintfA( m_pError, MAX_ERROR_SIZE, "ID3D11Effect::ParseSODecl - Non-digit '%c' in output slot", **ppSemantic );
+                    VH( E_FAIL );
+                }
+                (*ppSemantic)++;
+            }
+
+            // skip the colon (which is now '\0')
             (*ppSemantic)++;
+
+            while( isspace( (unsigned char)**ppSemantic ) )
+                (*ppSemantic)++;
         }
-
-        // skip the colon (which is now '\0')
-        (*ppSemantic)++;
-
-        while( isspace( (unsigned char)**ppSemantic ) )
-            (*ppSemantic)++;
 
 lExit:
         return hr;

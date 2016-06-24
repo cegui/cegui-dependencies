@@ -11,6 +11,8 @@
 
 #include "EffectBinaryFormat.h"
 
+#include <cstdlib>
+
 using namespace D3DX11Core;
 
 namespace D3DX11Effects
@@ -134,12 +136,12 @@ struct SMemberDataPointer
 
 struct SType : public ID3DX11EffectType
 {   
-    static const UINT_PTR c_InvalidIndex = (UINT) -1;
-    static const UINT c_ScalarSize = sizeof(UINT);
+    static const UINT_PTR c_InvalidIndex;
+    static const UINT c_ScalarSize;
 
     // packing rule constants
-    static const UINT c_ScalarsPerRegister = 4;
-    static const UINT c_RegisterSize = c_ScalarsPerRegister * c_ScalarSize; // must be a power of 2!!    
+    static const UINT c_ScalarsPerRegister;
+    static const UINT c_RegisterSize;
     
     EVarType    VarType;        // numeric, object, struct
     UINT        Elements;       // # of array elements (0 for non-arrays)
@@ -1023,8 +1025,8 @@ class CEffect : public ID3DX11Effect
     friend struct SPassBlock;
     friend class CEffectLoader;
     friend struct SConstantBuffer;
-    friend struct TSamplerVariable<TGlobalVariable<ID3DX11EffectSamplerVariable>>;
-    friend struct TSamplerVariable<TVariable<TMember<ID3DX11EffectSamplerVariable>>>;
+    friend struct TSamplerVariable<TGlobalVariable<ID3DX11EffectSamplerVariable> >;
+    friend struct TSamplerVariable<TVariable<TMember<ID3DX11EffectSamplerVariable> > >;
     
 protected:
 
@@ -1223,4 +1225,589 @@ public:
 
 };
 
+template<typename IBaseInterface>
+ID3DX11EffectVariable* TVariable<IBaseInterface>::GetMemberByName(LPCSTR Name)
+{
+    SVariable *pMember;
+    UDataPointer dataPtr;
+    UINT index;
+    TTopLevelVariable<ID3DX11EffectVariable> *pTopLevelEntity = this->GetTopLevelEntity();
+
+    if (pTopLevelEntity->pEffect->IsOptimized())
+    {
+        DPF(0, "ID3DX11EffectVariable::GetMemberByName: Cannot get members; effect has been Optimize()'ed");
+        return &g_InvalidScalarVariable;
+    }
+
+    if (this->pType->VarType != EVT_Struct)
+    {
+        DPF(0, "ID3DX11EffectVariable::GetMemberByName: Variable is not a structure");
+        return &g_InvalidScalarVariable;
+    }
+
+    if (!GetVariableByNameHelper<SVariable>(Name, this->pType->StructType.Members, this->pType->StructType.pMembers, 
+        this->Data.pNumeric, &pMember, &dataPtr.pGeneric, &index))
+    {
+        return &g_InvalidScalarVariable;
+
+    }
+
+    return pTopLevelEntity->pEffect->CreatePooledVariableMemberInterface(pTopLevelEntity, pMember, dataPtr, FALSE, index);
 }
+
+template<typename IBaseInterface>
+ID3DX11EffectVariable* TVariable<IBaseInterface>::GetMemberBySemantic(LPCSTR Semantic)
+{
+    SVariable *pMember;
+    UDataPointer dataPtr;
+    UINT index;
+    TTopLevelVariable<ID3DX11EffectVariable> *pTopLevelEntity = this->GetTopLevelEntity();
+
+    if (pTopLevelEntity->pEffect->IsOptimized())
+    {
+        DPF(0, "ID3DX11EffectVariable::GetMemberBySemantic: Cannot get members; effect has been Optimize()'ed");
+        return &g_InvalidScalarVariable;
+    }
+
+    if (this->pType->VarType != EVT_Struct)
+    {
+        DPF(0, "ID3DX11EffectVariable::GetMemberBySemantic: Variable is not a structure");
+        return &g_InvalidScalarVariable;
+    }
+
+    if (!GetVariableBySemanticHelper<SVariable>(Semantic, this->pType->StructType.Members, this->pType->StructType.pMembers, 
+        this->Data.pNumeric, &pMember, &dataPtr.pGeneric, &index))
+    {
+        return &g_InvalidScalarVariable;
+
+    }
+
+    return pTopLevelEntity->pEffect->CreatePooledVariableMemberInterface(pTopLevelEntity, pMember, dataPtr, FALSE, index);
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectVariable* TVariable<IBaseInterface>::GetElement(UINT Index)
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::GetElement";
+    TTopLevelVariable<ID3DX11EffectVariable> *pTopLevelEntity = this->GetTopLevelEntity();
+    UDataPointer dataPtr;
+
+    if (pTopLevelEntity->pEffect->IsOptimized())
+    {
+        DPF(0, "ID3DX11EffectVariable::GetElement: Cannot get element; effect has been Optimize()'ed");
+        return &g_InvalidScalarVariable;
+    }
+
+    if (!this->IsArray())
+    {
+        DPF(0, "%s: This interface does not refer to an array", pFuncName);
+        return &g_InvalidScalarVariable;
+    }
+
+    if (Index >=  this->pType->Elements)
+    {
+        DPF(0, "%s: Invalid element index (%d, total: %d)", pFuncName, Index, this->pType->Elements);
+        return &g_InvalidScalarVariable;
+    }
+
+    if (this->pType->BelongsInConstantBuffer())
+    {
+        dataPtr.pGeneric = this->Data.pNumeric + this->pType->Stride * Index;
+    }
+    else
+    {
+        dataPtr.pGeneric = GetBlockByIndex(this->pType->VarType, this->pType->ObjectType, this->Data.pGeneric, Index);
+        if (NULL == dataPtr.pGeneric)
+        {
+            DPF(0, "%s: Internal error", pFuncName);
+            return &g_InvalidScalarVariable;
+        }
+    }
+
+    return pTopLevelEntity->pEffect->CreatePooledVariableMemberInterface(pTopLevelEntity, (SVariable *) this, dataPtr, TRUE, Index);
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectScalarVariable* TVariable<IBaseInterface>::AsScalar()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsScalar";
+
+    if (this->pType->VarType != EVT_Numeric || 
+        this->pType->NumericType.NumericLayout != ENL_Scalar)
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidScalarVariable;
+    }
+
+    return (ID3DX11EffectScalarVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectVectorVariable* TVariable<IBaseInterface>::AsVector()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsVector";
+
+    if (this->pType->VarType != EVT_Numeric || 
+        this->pType->NumericType.NumericLayout != ENL_Vector)
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidVectorVariable;
+    }
+
+    return (ID3DX11EffectVectorVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectMatrixVariable* TVariable<IBaseInterface>::AsMatrix()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsMatrix";
+
+    if (this->pType->VarType != EVT_Numeric || 
+        this->pType->NumericType.NumericLayout != ENL_Matrix)
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidMatrixVariable;
+    }
+
+    return (ID3DX11EffectMatrixVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectStringVariable* TVariable<IBaseInterface>::AsString()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsString";
+
+    if (!this->pType->IsObjectType(EOT_String))
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidStringVariable;
+    }
+
+    return (ID3DX11EffectStringVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectClassInstanceVariable* TVariable<IBaseInterface>::AsClassInstance()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsClassInstance";
+
+    if (!this->pType->IsClassInstance() )
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidClassInstanceVariable;
+    }
+    else if( this->pMemberData == NULL )
+    {
+        DPF(0, "%s: Non-global class instance variables (members of structs or classes) and class instances "
+               "inside tbuffers are not supported.", pFuncName );
+        return &g_InvalidClassInstanceVariable;
+    }
+
+    return (ID3DX11EffectClassInstanceVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectInterfaceVariable* TVariable<IBaseInterface>::AsInterface()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsInterface";
+
+    if (!this->pType->IsInterface())
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidInterfaceVariable;
+    }
+
+    return (ID3DX11EffectInterfaceVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectShaderResourceVariable* TVariable<IBaseInterface>::AsShaderResource()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsShaderResource";
+
+    if (!this->pType->IsShaderResource())
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidShaderResourceVariable;
+    }
+
+    return (ID3DX11EffectShaderResourceVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectUnorderedAccessViewVariable* TVariable<IBaseInterface>::AsUnorderedAccessView()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsUnorderedAccessView";
+
+    if (!this->pType->IsUnorderedAccessView())
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidUnorderedAccessViewVariable;
+    }
+
+    return (ID3DX11EffectUnorderedAccessViewVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectRenderTargetViewVariable* TVariable<IBaseInterface>::AsRenderTargetView()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsRenderTargetView";
+
+    if (!this->pType->IsRenderTargetView())
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidRenderTargetViewVariable;
+    }
+
+    return (ID3DX11EffectRenderTargetViewVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectDepthStencilViewVariable* TVariable<IBaseInterface>::AsDepthStencilView()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsDepthStencilView";
+
+    if (!this->pType->IsDepthStencilView())
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidDepthStencilViewVariable;
+    }
+
+    return (ID3DX11EffectDepthStencilViewVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectConstantBuffer* TVariable<IBaseInterface>::AsConstantBuffer()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsConstantBuffer";
+    DPF(0, "%s: Invalid typecast", pFuncName);
+    return &g_InvalidConstantBuffer;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectShaderVariable* TVariable<IBaseInterface>::AsShader()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsShader";
+
+    if (!this->pType->IsShader())
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidShaderVariable;
+    }
+
+    return (ID3DX11EffectShaderVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectBlendVariable* TVariable<IBaseInterface>::AsBlend()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsBlend";
+
+    if (!this->pType->IsObjectType(EOT_Blend))
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidBlendVariable;
+    }
+
+    return (ID3DX11EffectBlendVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectDepthStencilVariable* TVariable<IBaseInterface>::AsDepthStencil()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsDepthStencil";
+
+    if (!this->pType->IsObjectType(EOT_DepthStencil))
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidDepthStencilVariable;
+    }
+
+    return (ID3DX11EffectDepthStencilVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectRasterizerVariable* TVariable<IBaseInterface>::AsRasterizer()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsRasterizer";
+
+    if (!this->pType->IsObjectType(EOT_Rasterizer))
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidRasterizerVariable;
+    }
+
+    return (ID3DX11EffectRasterizerVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectSamplerVariable* TVariable<IBaseInterface>::AsSampler()
+{
+    LPCSTR pFuncName = "ID3DX11EffectVariable::AsSampler";
+
+    if (!this->pType->IsSampler())
+    {
+        DPF(0, "%s: Invalid typecast", pFuncName);
+        return &g_InvalidSamplerVariable;
+    }
+
+    return (ID3DX11EffectSamplerVariable *) this;
+}
+
+template<typename IBaseInterface>
+ID3DX11EffectType* TMember<IBaseInterface>::GetType()
+{
+    if (IsSingleElement)
+    {
+        return pTopLevelEntity->pEffect->CreatePooledSingleElementTypeInterface( pType );
+    }
+    else
+    {
+        return (ID3DX11EffectType*) pType;
+    }
+}
+
+template<typename IBaseInterface>
+HRESULT TMember<IBaseInterface>::GetDesc(D3DX11_EFFECT_VARIABLE_DESC *pDesc)
+{
+    HRESULT hr = S_OK;
+    LPCSTR pFuncName = "ID3DX11EffectVariable::GetDesc";
+
+    VERIFYPARAMETER(pDesc != NULL);
+
+    pDesc->Name = pName;
+    pDesc->Semantic = pSemantic;
+    pDesc->Flags = 0;
+
+    if (pTopLevelEntity->pEffect->IsReflectionData(pTopLevelEntity))
+    {
+        // Is part of an annotation
+        D3DXASSERT(pTopLevelEntity->pEffect->IsReflectionData(Data.pGeneric));
+        pDesc->Annotations = 0;
+        pDesc->BufferOffset = 0;
+        pDesc->Flags |= D3DX11_EFFECT_VARIABLE_ANNOTATION;
+    }
+    else
+    {
+        // Is part of a global variable
+        D3DXASSERT(pTopLevelEntity->pEffect->IsRuntimeData(pTopLevelEntity));
+        if (!pTopLevelEntity->pType->IsObjectType(EOT_String))
+        {
+            // strings are funny; their data is reflection data, so ignore those
+            D3DXASSERT(pTopLevelEntity->pEffect->IsRuntimeData(Data.pGeneric));
+        }
+
+        pDesc->Annotations = ((TGlobalVariable<ID3DX11Effect>*)pTopLevelEntity)->AnnotationCount;
+
+        SConstantBuffer *pCB = ((TGlobalVariable<ID3DX11Effect>*)pTopLevelEntity)->pCB;
+
+        if (pType->BelongsInConstantBuffer())
+        {   
+            D3DXASSERT(pCB != NULL);
+            UINT_PTR offset = Data.pNumeric - pCB->pBackingStore;
+            D3DXASSERT(offset == (UINT)offset);
+            pDesc->BufferOffset = (UINT)offset;
+            D3DXASSERT(pDesc->BufferOffset >= 0 && pDesc->BufferOffset + GetTotalUnpackedSize() <= pCB->Size);
+        }
+        else
+        {
+            D3DXASSERT(pCB == NULL);
+            pDesc->BufferOffset = 0;
+        }
+    }
+
+    lExit:
+        return hr;
+}
+
+template<typename IBaseInterface>
+void TMember<IBaseInterface>::DirtyVariable()
+{
+    // make sure to call the global variable's version of dirty variable
+    ((TGlobalVariable<ID3DX11EffectVariable>*)pTopLevelEntity)->DirtyVariable();
+}
+
+template<typename IBaseInterface>
+HRESULT TGlobalVariable<IBaseInterface>::GetDesc(D3DX11_EFFECT_VARIABLE_DESC *pDesc)
+{
+    HRESULT hr = S_OK;
+    LPCSTR pFuncName = "ID3DX11EffectVariable::GetDesc";
+
+    VERIFYPARAMETER(pDesc != NULL);
+
+    pDesc->Name = this->pName;
+    pDesc->Semantic = this->pSemantic;
+    pDesc->Flags = 0;
+    pDesc->Annotations = AnnotationCount;
+
+    if (this->pType->BelongsInConstantBuffer())
+    {
+        D3DXASSERT(pCB != NULL);
+        UINT_PTR offset = this->Data.pNumeric - pCB->pBackingStore;
+        D3DXASSERT(offset == (UINT)offset);
+        pDesc->BufferOffset = (UINT)offset;
+        D3DXASSERT(pDesc->BufferOffset >= 0 && pDesc->BufferOffset + GetTotalUnpackedSize() <= pCB->Size );
+    }
+    else
+    {
+        D3DXASSERT(pCB == NULL);
+        pDesc->BufferOffset = 0;
+    }
+
+    if (this->ExplicitBindPoint != -1)
+    {
+        pDesc->ExplicitBindPoint = this->ExplicitBindPoint;
+        pDesc->Flags |= D3DX11_EFFECT_VARIABLE_EXPLICIT_BIND_POINT;
+    }
+    else
+    {
+        pDesc->ExplicitBindPoint = 0;
+    }
+
+    lExit:
+        return hr;
+}
+
+template<typename IBaseInterface>
+void TGlobalVariable<IBaseInterface>::DirtyVariable()
+{
+    D3DXASSERT(NULL != pCB);
+    pCB->IsDirty = TRUE;
+    LastModifiedTime = this->pEffect->GetCurrentTime();
+}
+
+template<typename IBaseInterface>
+HRESULT TBlendVariable<IBaseInterface>::GetBackingStore(UINT Index, D3D11_BLEND_DESC *pBlendDesc)
+{
+    LPCSTR pFuncName = "ID3DX11EffectBlendVariable::GetBackingStore";
+
+    CHECK_OBJECT_SCALAR_BOUNDS(Index, pBlendDesc);
+
+    if( this->Data.pBlend[Index].IsUserManaged )
+    {
+        if( this->Data.pBlend[Index].pBlendObject )
+        {
+            this->Data.pBlend[Index].pBlendObject->GetDesc( pBlendDesc );
+        }
+        else
+        {
+            *pBlendDesc = CD3D11_BLEND_DESC( D3D11_DEFAULT );
+        }
+    }
+    else
+    {
+        SBlendBlock *pBlock = this->Data.pBlend + Index;
+        if (pBlock->ApplyAssignments(this->GetTopLevelEntity()->pEffect))
+        {
+            pBlock->pAssignments[0].LastRecomputedTime = 0; // Force a recreate of this block the next time ApplyRenderStateBlock is called
+        }
+
+        memcpy( pBlendDesc, &pBlock->BackingStore, sizeof(D3D11_BLEND_DESC) );
+    }
+
+    lExit:
+        return hr;
+}
+
+template<typename IBaseInterface>
+HRESULT TDepthStencilVariable<IBaseInterface>::GetBackingStore(UINT Index, D3D11_DEPTH_STENCIL_DESC *pDepthStencilDesc)
+{
+    LPCSTR pFuncName = "ID3DX11EffectDepthStencilVariable::GetBackingStore";
+
+    CHECK_OBJECT_SCALAR_BOUNDS(Index, pDepthStencilDesc);
+
+    if( this->Data.pDepthStencil[Index].IsUserManaged )
+    {
+        if( this->Data.pDepthStencil[Index].pDSObject )
+        {
+            this->Data.pDepthStencil[Index].pDSObject->GetDesc( pDepthStencilDesc );
+        }
+        else
+        {
+            *pDepthStencilDesc = CD3D11_DEPTH_STENCIL_DESC( D3D11_DEFAULT );
+        }
+    }
+    else
+    {
+        SDepthStencilBlock *pBlock = this->Data.pDepthStencil + Index;
+        if (pBlock->ApplyAssignments(this->GetTopLevelEntity()->pEffect))
+        {
+            pBlock->pAssignments[0].LastRecomputedTime = 0; // Force a recreate of this block the next time ApplyRenderStateBlock is called
+        }
+
+        memcpy(pDepthStencilDesc, &pBlock->BackingStore, sizeof(D3D11_DEPTH_STENCIL_DESC));
+    }
+
+    lExit:
+        return hr;
+}
+
+template<typename IBaseInterface>
+HRESULT TRasterizerVariable<IBaseInterface>::GetBackingStore(UINT Index, D3D11_RASTERIZER_DESC *pRasterizerDesc)
+{
+    LPCSTR pFuncName = "ID3DX11EffectRasterizerVariable::GetBackingStore";
+
+    CHECK_OBJECT_SCALAR_BOUNDS(Index, pRasterizerDesc);
+
+    if( this->Data.pRasterizer[Index].IsUserManaged )
+    {
+        if( this->Data.pRasterizer[Index].pRasterizerObject )
+        {
+            this->Data.pRasterizer[Index].pRasterizerObject->GetDesc( pRasterizerDesc );
+        }
+        else
+        {
+            *pRasterizerDesc = CD3D11_RASTERIZER_DESC( D3D11_DEFAULT );
+        }
+    }
+    else
+    {
+        SRasterizerBlock *pBlock = this->Data.pRasterizer + Index;
+        if (pBlock->ApplyAssignments(this->GetTopLevelEntity()->pEffect))
+        {
+            pBlock->pAssignments[0].LastRecomputedTime = 0; // Force a recreate of this block the next time ApplyRenderStateBlock is called
+        }
+
+        memcpy(pRasterizerDesc, &pBlock->BackingStore, sizeof(D3D11_RASTERIZER_DESC));
+    }
+
+    lExit:
+        return hr;
+}
+
+template<typename IBaseInterface>
+HRESULT TSamplerVariable<IBaseInterface>::GetBackingStore(UINT Index, D3D11_SAMPLER_DESC *pSamplerDesc)
+{
+    LPCSTR pFuncName = "ID3DX11EffectSamplerVariable::GetBackingStore";
+
+    CHECK_OBJECT_SCALAR_BOUNDS(Index, pSamplerDesc);
+
+    if( this->Data.pSampler[Index].IsUserManaged )
+    {
+        if( this->Data.pSampler[Index].pD3DObject )
+        {
+            this->Data.pSampler[Index].pD3DObject->GetDesc( pSamplerDesc );
+        }
+        else
+        {
+            *pSamplerDesc = CD3D11_SAMPLER_DESC( D3D11_DEFAULT );
+        }
+    }
+    else
+    {
+        SSamplerBlock *pBlock = this->Data.pSampler + Index;
+        if (pBlock->ApplyAssignments(this->GetTopLevelEntity()->pEffect))
+        {
+            pBlock->pAssignments[0].LastRecomputedTime = 0; // Force a recreate of this block the next time ApplyRenderStateBlock is called
+        }
+
+        memcpy(pSamplerDesc, &pBlock->BackingStore.SamplerDesc, sizeof(D3D11_SAMPLER_DESC));
+    }
+
+    lExit:
+        return hr;
+}
+
+}
+
+

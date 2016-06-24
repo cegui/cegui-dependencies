@@ -19,6 +19,15 @@ using namespace D3DX11Debug;
 
 #include "d3dx11dbg.h"
 
+#ifdef __MINGW32__
+    #ifndef max
+        #define max(a ,b) ((a) > (b) ? (a) : (b))
+    #endif
+    #ifndef min
+        #define min(a, b) ((a) < (b) ? (a) : (b))
+    #endif
+#endif
+
 #define SAFE_RELEASE(p)       { if (p) { (p)->Release();  (p) = NULL; } }
 #define SAFE_ADDREF(p)        { if (p) { (p)->AddRef();               } }
 
@@ -472,17 +481,17 @@ public:
         Clear();
         UINT i;
 
-        for (i=0; i<m_CurSize; i++)
-            SAFE_DELETE(((T**)m_pData)[i]);
+        for (i=0; i<this->m_CurSize; i++)
+            SAFE_DELETE(((T**)this->m_pData)[i]);
 
-        SAFE_DELETE_ARRAY(m_pData);
+        SAFE_DELETE_ARRAY(this->m_pData);
     }
 
     void Clear()
     {
         Empty();
-        SAFE_DELETE_ARRAY(m_pData);
-        m_MaxSize = 0;
+        SAFE_DELETE_ARRAY(this->m_pData);
+        this->m_MaxSize = 0;
     }
 
     void Empty()
@@ -490,19 +499,19 @@ public:
         UINT i;
 
         // manually invoke destructor on all elements
-        for (i = 0; i < m_CurSize; ++ i)
+        for (i = 0; i < this->m_CurSize; ++ i)
         {
-            SAFE_DELETE(((T**)m_pData)[i]);
+            SAFE_DELETE(((T**)this->m_pData)[i]);
         }
-        m_CurSize = 0;
-        m_hLastError = S_OK;
+        this->m_CurSize = 0;
+        this->m_hLastError = S_OK;
     }
 
     void Delete(UINT index)
     {
         D3DXASSERT(index < m_CurSize);
 
-        SAFE_DELETE(((T**)m_pData)[index]);
+        SAFE_DELETE(((T**)this->m_pData)[index]);
 
         CEffectVector<T*>::Delete(index);
     }
@@ -670,10 +679,19 @@ inline void* __cdecl operator new(size_t s, CDataBlockStore &pAllocator)
     return pAllocator.Allocate( (UINT)s );
 }
 
+inline void* __cdecl operator new[](size_t s, CDataBlockStore &pAllocator)
+{
+    D3DXASSERT( s <= 0xffffffff );
+    return pAllocator.Allocate( (UINT)s );
+}
+
 inline void __cdecl operator delete(void* p, CDataBlockStore &pAllocator)
 {
 }
 
+inline void __cdecl operator delete[](void* p, CDataBlockStore &pAllocator)
+{
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Hash table
@@ -1285,6 +1303,8 @@ template<typename T, BOOL (*pfnIsEqual)(const T &Data1, const T &Data2)>
 class CEffectHashTableWithPrivateHeap : public CEffectHashTable<T, pfnIsEqual>
 {
 protected:
+    typedef typename CEffectHashTable<T, pfnIsEqual>::SHashEntry SHashEntry;
+
     CDataBlockStore *m_pPrivateHeap;
 
 public:
@@ -1295,9 +1315,9 @@ public:
 
     void Cleanup()
     {
-        CleanArray();
-        m_NumHashSlots = 0;
-        m_NumEntries = 0;
+        this->CleanArray();
+        this->m_NumHashSlots = 0;
+        this->m_NumEntries = 0;
     }
 
     ~CEffectHashTableWithPrivateHeap()
@@ -1321,15 +1341,15 @@ public:
         D3DXASSERT(m_NumHashSlots > 0);
 
         SHashEntry *pHashEntry;
-        UINT index = Hash % m_NumHashSlots;
+        UINT index = Hash % this->m_NumHashSlots;
 
         VN( pHashEntry = new(*m_pPrivateHeap) SHashEntry );
-        pHashEntry->pNext = m_rgpHashEntries[index];
+        pHashEntry->pNext = this->m_rgpHashEntries[index];
         pHashEntry->Data = Data;
         pHashEntry->Hash = Hash;
-        m_rgpHashEntries[index] = pHashEntry;
+        this->m_rgpHashEntries[index] = pHashEntry;
 
-        ++ m_NumEntries;
+        ++ this->m_NumEntries;
 
 lExit:
         return hr;
