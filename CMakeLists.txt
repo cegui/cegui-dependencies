@@ -16,6 +16,9 @@ endif()
 
 project(CEGUI-DEPS)
 
+list( APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" )
+include( CEGUI-deps-macros )
+
 set(CMAKE_DEBUG_POSTFIX _d)
 
 cmake_dependent_option( CEGUI_MSVC_STATIC_RUNTIME "Specifies whether to the static runtime (/MT and /MTd) or the DLL runtime (/MD and /MDd)." FALSE "MSVC" FALSE )
@@ -25,6 +28,8 @@ if (APPLE)
     set(CEGUI_APPLE_DYLIB_INSTALL_PATH "@executable_path/../Frameworks" CACHE STRING "Specifies the install path for generated dylibs." )
     mark_as_advanced(CEGUI_APPLE_DYLIB_INSTALL_PATH)
 endif()
+
+cegui_check_mingw()
 
 if (CEGUI_MSVC_STATIC_RUNTIME)
     foreach(_BUILD_CONFIG DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
