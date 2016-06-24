@@ -43,7 +43,6 @@ if (MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
-
 macro(cegui_add_library _NAME _SOURCES_VAR _HEADERS_VAR)
     add_library(${_NAME} SHARED ${${_SOURCES_VAR}} ${${_HEADERS_VAR}})
 
@@ -100,10 +99,11 @@ macro(cegui_add_library _NAME _SOURCES_VAR _HEADERS_VAR)
 
 endmacro()
 
+find_package(DirectXSDK)
+
 cmake_dependent_option(CEGUI_BUILD_EFFECTS11
 "Specifies whether to build the D3DX11Effects library.
-Source code need to be located at '%DXSDK_DIR%/Samples/C++/Effects11'.
-(Required for the Direct3D 11 Renderer module)" TRUE "WIN32; NOT MINGW" FALSE)
+(Required for the Direct3D 11 Renderer module)" TRUE "DIRECTXSDK_FOUND; NOT DIRECTXSDK_MAX_D3D LESS 11" FALSE)
 
 option(CEGUI_BUILD_ZLIB "Specifies whether to build the zlib library
 (Required for minizip resource provider support within in CEGUI).
@@ -177,7 +177,7 @@ endif()
 
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/dependencies/include")
 
-if (WIN32 AND CEGUI_BUILD_EFFECTS11 AND EXISTS "$ENV{DXSDK_DIR}/Samples/C++/Effects11")
+if (CEGUI_BUILD_EFFECTS11)
     add_subdirectory(src/D3D11Effects/CEGUI-BUILD)
     set(Effects11Dep D3DX11Effects)
 endif()
