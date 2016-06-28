@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 include(CMakeDependentOption)
 
 if (NOT APPLE AND NOT WIN32 AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -16,6 +16,9 @@ endif()
 
 project(CEGUI-DEPS)
 
+list( APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" )
+include( CEGUI-deps-macros )
+
 set(CMAKE_DEBUG_POSTFIX _d)
 
 cmake_dependent_option( CEGUI_MSVC_STATIC_RUNTIME "Specifies whether to the static runtime (/MT and /MTd) or the DLL runtime (/MD and /MDd)." FALSE "MSVC" FALSE )
@@ -25,6 +28,8 @@ if (APPLE)
     set(CEGUI_APPLE_DYLIB_INSTALL_PATH "@executable_path/../Frameworks" CACHE STRING "Specifies the install path for generated dylibs." )
     mark_as_advanced(CEGUI_APPLE_DYLIB_INSTALL_PATH)
 endif()
+
+cegui_check_mingw()
 
 if (CEGUI_MSVC_STATIC_RUNTIME)
     foreach(_BUILD_CONFIG DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
@@ -37,7 +42,6 @@ endif()
 if (MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
-
 
 macro(cegui_add_library _NAME _SOURCES_VAR _HEADERS_VAR)
     add_library(${_NAME} SHARED ${${_SOURCES_VAR}} ${${_HEADERS_VAR}})

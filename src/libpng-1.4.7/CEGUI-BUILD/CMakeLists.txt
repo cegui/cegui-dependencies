@@ -3,10 +3,6 @@ set(DEPNAME libpng)
 file(GLOB SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "../png*.c")
 list(REMOVE_ITEM SOURCES ../pnggccrd.c ../pngvcrd.c ../pngtest.c)
 
-if (WIN32)
-    list(APPEND SOURCES ../scripts/pngwin${CMAKE_DEBUG_POSTFIX}.def)
-endif()
-
 set(HEADERS png.h pngconf.h)
 
 include_directories(../ ${CMAKE_BINARY_DIR}/dependencies/include)
@@ -17,6 +13,18 @@ if (WIN32)
     set_target_properties(${DEPNAME} PROPERTIES
         DEFINE_SYMBOL "PNG_BUILD_DLL"
         COMPILE_DEFINITIONS "ZLIB_DLL")
+
+    if (MSVC)
+        set_target_properties(${DEPNAME} PROPERTIES
+            LINK_FLAGS_RELEASE "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/../scripts/pngwin.def\""
+            LINK_FLAGS_DEBUG   "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/../scripts/pngwin${CMAKE_DEBUG_POSTFIX}.def\"")
+    else()
+        if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+            list(APPEND SOURCES ../scripts/pngwin${CMAKE_DEBUG_POSTFIX}.def)
+        else()
+            list(APPEND SOURCES ../scripts/pngwin.def)
+        endif()
+    endif()
 endif()
 
 set_property(TARGET ${DEPNAME} APPEND PROPERTY
