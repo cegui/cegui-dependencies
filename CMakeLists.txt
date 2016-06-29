@@ -30,6 +30,7 @@ if (APPLE)
 endif()
 
 cegui_check_mingw()
+cegui_check_msvc()
 
 if (CEGUI_MSVC_STATIC_RUNTIME)
     foreach(_BUILD_CONFIG DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
