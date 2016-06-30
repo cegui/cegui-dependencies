@@ -49,3 +49,13 @@ macro( cegui_check_mingw )
         endif()
     endif()
 endmacro()
+
+macro( cegui_check_msvc )
+    if(MSVC)
+        # Older than minimally supported version of Visual Studio 2013
+        if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0) 
+            message(FATAL_ERROR "You are trying to use a version of Visual Studio older than Visual Studio 2013. Please"
+                " use Visual Studio 2013 or newer, since older versions are not supported and will neither compile nor run.")
+        endif ()
+    endif()
+endmacro()
