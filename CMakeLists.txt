@@ -30,6 +30,7 @@ if (APPLE)
 endif()
 
 cegui_check_mingw()
+cegui_check_msvc()
 
 if (CEGUI_MSVC_STATIC_RUNTIME)
     foreach(_BUILD_CONFIG DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
@@ -99,12 +100,6 @@ macro(cegui_add_library _NAME _SOURCES_VAR _HEADERS_VAR)
 
 endmacro()
 
-find_package(DirectXSDK)
-
-cmake_dependent_option(CEGUI_BUILD_EFFECTS11
-"Specifies whether to build the D3DX11Effects library.
-(Required for the Direct3D 11 Renderer module)" TRUE "DIRECTXSDK_FOUND; NOT DIRECTXSDK_MAX_D3D LESS 11" FALSE)
-
 option(CEGUI_BUILD_ZLIB "Specifies whether to build the zlib library
 (Required for minizip resource provider support within in CEGUI).
 Note: Some other dependencies may automatically enable the building of this library" FALSE)
@@ -157,6 +152,9 @@ option(CEGUI_BUILD_GLM "Specifies whether to copy the GLM library headers.
 option(CEGUI_BUILD_TOLUAPP "Specifies whether to build the tolua++ library.
 (Required to build the Lua script module for CEGUI)" FALSE)
 
+option(CEGUI_BUILD_LIBRAQM "Specifies whether to build the libraqm library.
+(Required for bidirectional text (Arabic, Hebrew, etc.) and for Editbox cursor positioning)" TRUE)
+
 if (CEGUI_BUILD_SILLY OR CEGUI_BUILD_CORONA OR CEGUI_BUILD_DEVIL)
     set(CEGUI_BUILD_LIBPNG TRUE)
     set(CEGUI_BUILD_JPEG TRUE)
@@ -175,12 +173,13 @@ if (CEGUI_BUILD_TOLUAPP)
 	set(CEGUI_BUILD_LUA TRUE)
 endif()
 
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/dependencies/include")
-
-if (CEGUI_BUILD_EFFECTS11)
-    add_subdirectory(src/D3D11Effects/CEGUI-BUILD)
-    set(Effects11Dep D3DX11Effects)
+if (CEGUI_BUILD_LIBRAQM)
+	set(CEGUI_BUILD_HARFBUZZ TRUE)
+    set(CEGUI_BUILD_FRIBIDI TRUE)
+    set(CEGUI_BUILD_FREETYPE2 TRUE)
 endif()
+
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/dependencies/include")
 
 if (CEGUI_BUILD_ZLIB)
     add_subdirectory(src/zlib-1.2.5/CEGUI-BUILD)
@@ -208,7 +207,7 @@ if (CEGUI_BUILD_LIBTIFF)
 endif()
 
 if (CEGUI_BUILD_FREETYPE2)
-    add_subdirectory(src/freetype-2.4.4/CEGUI-BUILD)
+    add_subdirectory(src/freetype-2.6.3/CEGUI-BUILD)
     set(freetypeDep freetype)
 endif()
 
@@ -282,8 +281,23 @@ if (CEGUI_BUILD_TOLUAPP)
     set(toluappDep toluapp)
 endif()
 
+if (CEGUI_BUILD_FRIBIDI)
+    add_subdirectory(src/fribidi-0.19.7/CEGUI-BUILD)
+    set(fribidiDep fribidi )
+endif()
+
+if (CEGUI_BUILD_HARFBUZZ)
+    #add_subdirectory(src/harfbuzz-1.2.7/CEGUI-BUILD)
+    set(harfbuzzDep harfbuzz)
+endif()
+
+if (CEGUI_BUILD_LIBRAQM)
+    #add_subdirectory(src/libraqm-0.1.1/CEGUI-BUILD)
+    set(libraqmDep libraqm)
+endif()
+
 add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
-    ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep} ${Effects11Dep}
+    ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep}
     ${glewDep} ${tinyxmlDep} ${minizipDep} ${toluappDep} ${glfwDep})
 
 if (MSVC)
