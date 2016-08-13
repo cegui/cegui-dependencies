@@ -1,5 +1,13 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+#ifdef HB_STATIC
+#   define HB_EXTERN
+#elif defined(harfbuzz_EXPORTS)
+#   define HB_EXTERN __declspec(dllexport)
+#else
+#   define HB_EXTERN __declspec(dllimport)
+#endif
+
 /* The normal alignment of `struct{char;}', in bytes. */
 #define ALIGNOF_STRUCT_CHAR__ 1
 

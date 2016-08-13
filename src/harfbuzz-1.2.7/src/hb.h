@@ -29,17 +29,7 @@
 #define HB_H_IN
 
 #ifndef HB_EXTERN
-#	ifdef HB_STATIC
-#		define HB_EXTERN
-#	else
-#		ifdef harfbuzz_EXPORTS
-#			define HB_EXTERN __declspec(dllexport)
-#		else
-#			define HB_EXTERN __declspec(dllimport)
-#		endif
-#	endif
-#else
-#   define HB_EXTERN
+#define HB_EXTERN extern
 #endif
 
 #include "hb-blob.h"
