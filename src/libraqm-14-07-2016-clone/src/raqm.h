@@ -33,6 +33,24 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#if defined(_WIN32) || defined(__WIN32__)
+#	ifdef LIBRAQM_STATIC
+#		define RAQM_EXPORT
+#	else
+#		ifdef LIBRAQM_EXPORTS
+#			define RAQM_EXPORT __declspec(dllexport)
+#		else
+#			define RAQM_EXPORT __declspec(dllimport)
+#		endif
+#	endif
+#else
+#   define RAQM_EXPORT
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * raqm_t:
  *
@@ -70,6 +88,7 @@ typedef enum
  * @x_offset: the horizontal movement of the glyph from the current point.
  * @y_offset: the vertical movement of the glyph from the current point.
  * @cluster: the index of original character in input text.
+ * @ftface: the @FT_Face of the glyph.
  *
  * The structure that holds information about output glyphs, returned from
  * raqm_get_glyphs().
@@ -81,51 +100,67 @@ typedef struct raqm_glyph_t {
     int x_offset;
     int y_offset;
     uint32_t cluster;
+    FT_Face ftface;
 } raqm_glyph_t;
 
-raqm_t *
+RAQM_EXPORT raqm_t *
 raqm_create (void);
 
-raqm_t *
+RAQM_EXPORT raqm_t *
 raqm_reference (raqm_t *rq);
 
-void
+RAQM_EXPORT void
 raqm_destroy (raqm_t *rq);
 
-bool
+RAQM_EXPORT bool
 raqm_set_text (raqm_t         *rq,
                const uint32_t *text,
                size_t          len);
 
-bool
+RAQM_EXPORT bool
 raqm_set_text_utf8 (raqm_t     *rq,
                     const char *text,
                     size_t      len);
 
-bool
+RAQM_EXPORT bool
 raqm_set_par_direction (raqm_t          *rq,
                         raqm_direction_t dir);
 
-bool
+RAQM_EXPORT bool
 raqm_add_font_feature  (raqm_t     *rq,
                         const char *feature,
                         int         len);
 
-bool
+RAQM_EXPORT bool
 raqm_set_freetype_face (raqm_t *rq,
                         FT_Face face);
 
-bool
+RAQM_EXPORT bool
 raqm_set_freetype_face_range (raqm_t *rq,
                               FT_Face face,
                               size_t  start,
                               size_t  len);
 
-bool
+RAQM_EXPORT bool
 raqm_layout (raqm_t *rq);
 
-raqm_glyph_t *
+RAQM_EXPORT raqm_glyph_t *
 raqm_get_glyphs (raqm_t *rq,
                  size_t *length);
 
+#ifdef __cplusplus
+}
+#endif
+
+bool
+raqm_index_to_position (raqm_t *rq,
+                        size_t *index,
+                        int *x,
+                        int *y);
+
+bool
+raqm_position_to_index (raqm_t *rq,
+                        int x,
+                        int y,
+                        size_t *index);
 #endif /* _RAQM_H_ */

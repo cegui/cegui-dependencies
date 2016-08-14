@@ -292,7 +292,7 @@ if (CEGUI_BUILD_HARFBUZZ)
 endif()
 
 if (CEGUI_BUILD_LIBRAQM)
-    #add_subdirectory(src/libraqm-0.1.1/CEGUI-BUILD)
+    add_subdirectory(src/libraqm-14-07-2016-clone/CEGUI-BUILD)
     set(libraqmDep libraqm)
 endif()
 

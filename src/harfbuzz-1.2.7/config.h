@@ -2,7 +2,7 @@
 
 #ifdef HB_STATIC
 #   define HB_EXTERN
-#elif defined(harfbuzz_EXPORTS)
+#elif defined(HARFBUZZ_EXPORTS)
 #   define HB_EXTERN __declspec(dllexport)
 #else
 #   define HB_EXTERN __declspec(dllimport)

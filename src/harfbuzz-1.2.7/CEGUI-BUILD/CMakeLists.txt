@@ -1,4 +1,4 @@
-set(DEPNAME harfbuzz)
+set(DEPNAME HARFBUZZ)
 
 set(PRIVATE_HEADERS
     ../src/hb-atomic-private.hh 
