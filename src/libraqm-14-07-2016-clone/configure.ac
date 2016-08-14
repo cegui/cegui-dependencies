@@ -1,5 +1,5 @@
 AC_INIT([Raqm],
-        [0.1.1],
+        [0.2.0],
         [https://github.com/HOST-Oman/libraqm/issues],
         [raqm],
         [https://github.com/HOST-Oman/libraqm/])
@@ -28,14 +28,19 @@ _save_libs="$LIBS"
 _save_cflags="$CFLAGS"
 LIBS="$LIBS $HARFBUZZ_LIBS $FRIBIDI_LIBS"
 CFLAGS="$CFLAGS $HARFBUZZ_CFLAGS $FRIBIDI_CFLAGS"
-AC_CHECK_FUNC(fribidi_reorder_runs)
-AC_CHECK_FUNC(hb_ft_font_create_referenced)
+AC_CHECK_FUNCS(fribidi_reorder_runs hb_ft_font_create_referenced)
 LIBS="$_save_libs"
 CFLAGS="$_save_cflags"
 
 AM_CONDITIONAL(HAVE_GLIB, $have_glib)
 
 GTK_DOC_CHECK([1.14],[--flavour no-tmpl])
+
+case $build_os in
+    mingw*)
+        AX_APPEND_FLAG([-D__USE_MINGW_ANSI_STDIO=1])
+        ;;
+esac
 
 AC_CONFIG_FILES([
     Makefile
