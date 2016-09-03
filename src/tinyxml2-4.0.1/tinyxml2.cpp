@@ -149,6 +149,7 @@ void StrPair::TransferTo( StrPair* other )
     // This in effect implements the assignment operator by "moving"
     // ownership (as in auto_ptr).
 
+    TIXMLASSERT( other != 0 );
     TIXMLASSERT( other->_flags == 0 );
     TIXMLASSERT( other->_start == 0 );
     TIXMLASSERT( other->_end == 0 );
@@ -537,7 +538,7 @@ void XMLUtil::ToStr( unsigned v, char* buffer, int bufferSize )
 
 void XMLUtil::ToStr( bool v, char* buffer, int bufferSize )
 {
-    TIXML_SNPRINTF( buffer, bufferSize, "%d", v ? 1 : 0 );
+    TIXML_SNPRINTF( buffer, bufferSize, "%s", v ? "true" : "false" );
 }
 
 /*
@@ -738,7 +739,7 @@ XMLNode::~XMLNode()
 
 const char* XMLNode::Value() const 
 {
-    // Catch an edge case: XMLDocuments don't have a a Value. Carefully return nullptr.
+    // Edge case: XMLDocuments don't have a Value. Return null.
     if ( this->ToDocument() )
         return 0;
     return _value.GetStr();
@@ -759,11 +760,7 @@ void XMLNode::DeleteChildren()
 {
     while( _firstChild ) {
         TIXMLASSERT( _lastChild );
-        TIXMLASSERT( _firstChild->_document == _document );
-        XMLNode* node = _firstChild;
-        Unlink( node );
-
-        DeleteNode( node );
+        DeleteChild( _firstChild );
     }
     _firstChild = _lastChild = 0;
 }
@@ -990,7 +987,7 @@ char* XMLNode::ParseDeep( char* p, StrPair* parentEnd )
                 // Set error, if document already has children.
                 if ( !_document->NoChildren() ) {
                         _document->SetError( XML_ERROR_PARSING_DECLARATION, decl->Value(), 0);
-                        DeleteNode( decl );
+                        DeleteNode( node );
                         break;
                 }
         }
@@ -2395,6 +2392,13 @@ void XMLPrinter::PushText( const char* text, bool cdata )
     else {
         PrintString( text, true );
     }
+}
+
+void XMLPrinter::PushText( int64_t value )
+{
+    char buf[BUF_SIZE];
+    XMLUtil::ToStr( value, buf, BUF_SIZE );
+    PushText( buf, false );
 }
 
 void XMLPrinter::PushText( int value )

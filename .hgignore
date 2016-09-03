@@ -31,4 +31,11 @@ src/tiff-3.9.5/libtiff/tif_config.h
 src/tiff-3.9.5/libtiff/tiffconf.h
 src/xerces-c-3.1.1/src/xercesc/util/Xerces_autoconf_config.hpp
 
+src/tinyxml2-4.0.1/tinyxml2/Debug-Dll/
+src/tinyxml2-4.0.1/tinyxml2/Debug-Lib/
+src/tinyxml2-4.0.1/tinyxml2/Release-Dll/
+src/tinyxml2-4.0.1/tinyxml2/Release-Lib/
+src/tinyxml2-4.0.1/tinyxml2/*.sdf
+src/tinyxml2-4.0.1/tinyxml2/*.suo
+
 glob:CEGUI-DEPS-0.8.x-beta3
