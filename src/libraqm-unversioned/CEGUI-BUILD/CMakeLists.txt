@@ -1,8 +1,7 @@
-set(DEPNAME LIBRAQM)
+set(DEPNAME raqm)
 
 set(PRIVATE_HEADERS
-    ../src/raqm.h
-    ../src/reorder_runs.h)
+    ../src/raqm.h)
 
 set(PUBLIC_HEADERS
     ../src/raqm.h)
@@ -12,7 +11,6 @@ set(PUBLIC_HEADERS
     ${PUBLIC_HEADERS})
     
  set(SOURCES
-    ../src/reorder_runs.c
     ../src/raqm.c)
     
     
@@ -31,15 +29,17 @@ include_directories(
 cegui_add_library(${DEPNAME} SOURCES HEADERS)
 
 
-target_link_libraries(${DEPNAME} freetype HARFBUZZ fribidi)
-add_dependencies(${DEPNAME}_static freetype HARFBUZZ fribidi)
-target_link_libraries(${DEPNAME}_static freetype HARFBUZZ fribidi)
+target_link_libraries(${DEPNAME} freetype harfbuzz fribidi)
+add_dependencies(${DEPNAME}_static freetype harfbuzz fribidi)
+target_link_libraries(${DEPNAME}_static freetype harfbuzz fribidi)
 
 set(TARGET_COMPILE_FLAGS
+    RAQM_EXPORTS
 )
 
 set(TARGET_COMPILE_FLAGS_STATIC
-    LIBRAQM_STATIC
+    RAQM_STATIC
+    RAQM_EXPORTS
 )
 
 
