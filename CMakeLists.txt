@@ -283,7 +283,7 @@ endif()
 
 if (CEGUI_BUILD_FRIBIDI)
     add_subdirectory(src/fribidi-0.19.7/CEGUI-BUILD)
-    set(fribidiDep fribidi )
+    set(fribidiDep fribidi)
 endif()
 
 if (CEGUI_BUILD_HARFBUZZ)
@@ -292,7 +292,7 @@ if (CEGUI_BUILD_HARFBUZZ)
 endif()
 
 if (CEGUI_BUILD_LIBRAQM)
-    add_subdirectory(src/libraqm-14-07-2016-clone/CEGUI-BUILD)
+    add_subdirectory(src/libraqm-unversioned/CEGUI-BUILD)
     set(libraqmDep libraqm)
 endif()
 
