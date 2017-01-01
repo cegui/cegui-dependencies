@@ -45,6 +45,15 @@
 
 FT_BEGIN_HEADER
 
+/* DLL export control for windows.  added by CEGUI project */
+/*
+Presumably we're going to need dllimport as well?  I'll add this if needed
+once I know for sure...
+*/
+#if defined(WIN32) && defined(freetype_EXPORTS)
+#define FT_EXPORT(return_type) __declspec(dllexport) return_type
+#define FT_EXPORT_DEF(return_type) __declspec(dllexport) return_type
+#endif
 
   /*************************************************************************/
   /*                                                                       */
