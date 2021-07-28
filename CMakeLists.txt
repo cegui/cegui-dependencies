@@ -268,7 +268,7 @@ if (CEGUI_BUILD_MINIZIP)
 endif()
 
 if (CEGUI_BUILD_GLFW)
-    add_subdirectory(src/glfw-2.7.2/CEGUI-BUILD)
+    add_subdirectory(src/glfw-2.7.9/CEGUI-BUILD)
     set(glfwDep glfw)
 endif()
 
