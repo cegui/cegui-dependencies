@@ -1,10 +1,4 @@
 # Aside CEGUI-specific target generator this is merely a translation of meson.build shipped with raqm
-#project(<PROJECT-NAME> [<language-name>...])
-#project(<PROJECT-NAME>
-#        [VERSION <major>[.<minor>[.<patch>[.<tweak>]]]]
-#        [DESCRIPTION <project-description-string>]
-#        [HOMEPAGE_URL <url-string>]
-#        [LANGUAGES <language-name>...])
 
 include(CheckSymbolExists) # CMake module
 
@@ -13,7 +7,7 @@ set(DEPNAME raqm)
 set(RAQM_VERSION_MAJOR 0) 
 set(RAQM_VERSION_MINOR 8) 
 set(RAQM_VERSION_MICRO 0) 
-set(RAQM_VERSION "${RAQM_VERSION_MAJOR}.${RAQM_VERSION_MINOR}.${RAQM_VERSION_MICRO}") 
+set(RAQM_VERSION "${RAQM_VERSION_MAJOR}.${RAQM_VERSION_MINOR}.${RAQM_VERSION_MICRO}")
 
 set(HEADERS ../src/raqm.h)
 set(SOURCES ../src/raqm.c)
@@ -45,7 +39,7 @@ foreach(RAQM_TARGET_NAME IN LISTS RAQM_ALL_TARGETS)
 			${CMAKE_BINARY_DIR}/dependencies/include/raqm
 			${CMAKE_BINARY_DIR}/dependencies/include/fribidi/lib
 			${CMAKE_BINARY_DIR}/dependencies/include/fribidi/charset  
-			${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz/src
+			${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz
 		PRIVATE
 			../src
 	)
@@ -59,7 +53,7 @@ foreach(RAQM_TARGET_NAME IN LISTS RAQM_ALL_TARGETS)
 	# CEGUI-specific --------------------------------------------------------------
 		
 	foreach(_H_FILE ${HEADERS})
-		# From 3.20:
+		# From CMake 3.20:
 		#cmake_path(RELATIVE_PATH ${_H_FILE} "${CMAKE_CURRENT_SOURCE_DIR}/../src")
 		get_filename_component(_H_FILE "${_H_FILE}" ABSOLUTE)
 		file(RELATIVE_PATH _H_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../src" ${_H_FILE})
