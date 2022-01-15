@@ -201,6 +201,7 @@ if (CEGUI_BUILD_RAQM)
     set(CEGUI_BUILD_FREETYPE2 TRUE)
 endif()
 
+file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/dependencies/include")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/dependencies/include")
 
 if (CEGUI_BUILD_ZLIB)
@@ -229,7 +230,7 @@ if (CEGUI_BUILD_LIBTIFF)
 endif()
 
 if (CEGUI_BUILD_FREETYPE2)
-    add_subdirectory(src/freetype-2.7.1/CEGUI-BUILD)
+    add_subdirectory(src/freetype-2.11.1/CEGUI-BUILD)
     set(freetypeDep freetype)
 endif()
 

@@ -4,6 +4,16 @@
 #cmakedefine HAVE_UNISTD_H @HAVE_UNISTD_H@
 #cmakedefine HAVE_SYS_MMAN_H @HAVE_SYS_MMAN_H@
 #cmakedefine HAVE_STDBOOL_H @HAVE_STDBOOL_H@
+#cmakedefine HAVE_XLOCALE_H @HAVE_XLOCALE_H@
+
+#cmakedefine HAVE_ATEXIT
+#cmakedefine HAVE_MPROTECT
+#cmakedefine HAVE_SYSCONF
+#cmakedefine HAVE_GETPAGESIZE
+#cmakedefine HAVE_MMAP
+#cmakedefine HAVE_ISATTY
+#cmakedefine HAVE_USELOCALE
+#cmakedefine HAVE_NEWLOCALE
 
 #cmakedefine HAVE_PTHREAD @HAVE_PTHREAD@
 
