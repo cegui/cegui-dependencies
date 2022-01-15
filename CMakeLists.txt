@@ -1,6 +1,24 @@
 cmake_minimum_required(VERSION 2.8.12)
 include(CMakeDependentOption)
 
+# Functions -------------------------------------------------------------------
+
+function (extract_make_variable variable makefile_source)
+  string(REGEX MATCH "${variable} = ([^$]+)\\$" temp "${makefile_source}")
+  string(REGEX MATCHALL "[^ \n\t\\]+" listVar "${CMAKE_MATCH_1}")
+  set (${variable} ${listVar} PARENT_SCOPE)
+endfunction ()
+
+function (add_prefix_to_list var prefix)
+  set (listVar "")
+  foreach (f ${${var}})
+    list(APPEND listVar "${prefix}${f}")
+  endforeach ()
+  set (${var} "${listVar}" PARENT_SCOPE)
+endfunction ()
+
+#------------------------------------------------------------------------------
+
 if (NOT APPLE AND NOT WIN32 AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 message(FATAL_ERROR
 "This dependency pack is intended for use on Apple OS X and MS Windows only. "
@@ -286,7 +304,7 @@ if (CEGUI_BUILD_TOLUAPP)
 endif()
 
 if (CEGUI_BUILD_FRIBIDI)
-    add_subdirectory(src/fribidi-0.19.7/CEGUI-BUILD)
+    add_subdirectory(src/fribidi-1.0.11/CEGUI-BUILD)
     set(fribidiDep fribidi)
 endif()
 

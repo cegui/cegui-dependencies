@@ -14,9 +14,14 @@ set(SOURCES ../src/raqm.c)
 
 configure_file(../src/raqm-version.h.in ${CMAKE_BINARY_DIR}/dependencies/include/raqm/raqm-version.h @ONLY)
 
-check_symbol_exists(FT_Get_Transform "freetype/freetype.h" HAVE_FT_GET_TRANSFORM)
-check_symbol_exists(hb_buffer_set_invisible_glyph "hb.h" HAVE_HB_BUFFER_SET_INVISIBLE_GLYPH) # "hb-buffer.h"
-check_symbol_exists(HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES "hb.h" HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES)
+# FIXME: get rid of versions in folder names? It is too easy to forget to change it here!
+#set(HARFBUZZ_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/../../harfbuzz-3.2.0/src/hb.h")
+#set(FREETYPE_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/../../freetype-2.7.1/include/freetype/freetype.h")
+set(HARFBUZZ_HEADERS "hb.h")
+set(FREETYPE_HEADERS "freetype/freetype.h")
+check_symbol_exists(FT_Get_Transform ${FREETYPE_HEADERS} HAVE_FT_GET_TRANSFORM)
+check_symbol_exists(hb_buffer_set_invisible_glyph ${HARFBUZZ_HEADERS} HAVE_HB_BUFFER_SET_INVISIBLE_GLYPH) # "hb-buffer.h"
+check_symbol_exists(HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES ${HARFBUZZ_HEADERS} HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES)
 # NB: meson is able to generate config without input, but for CMake we had to provide config.h.in
 configure_file(config.h.in ${CMAKE_BINARY_DIR}/dependencies/include/raqm/config.h @ONLY)
 
@@ -31,21 +36,20 @@ if (TARGET ${DEPNAME}_static)
 endif()
 
 get_property(RAQM_ALL_TARGETS DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY BUILDSYSTEM_TARGETS)
-foreach(RAQM_TARGET_NAME IN LISTS RAQM_ALL_TARGETS)
+foreach(TARGET_NAME IN LISTS RAQM_ALL_TARGETS)
 
-	target_include_directories(${RAQM_TARGET_NAME}
+	target_include_directories(${TARGET_NAME}
 		PUBLIC
 			${CMAKE_BINARY_DIR}/dependencies/include
 			${CMAKE_BINARY_DIR}/dependencies/include/raqm
-			${CMAKE_BINARY_DIR}/dependencies/include/fribidi/lib
-			${CMAKE_BINARY_DIR}/dependencies/include/fribidi/charset  
+			${CMAKE_BINARY_DIR}/dependencies/include/fribidi
 			${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz
 		PRIVATE
 			../src
 	)
-	target_link_libraries(${RAQM_TARGET_NAME} freetype harfbuzz fribidi)
-	target_compile_definitions(${RAQM_TARGET_NAME} PUBLIC "HAVE_CONFIG_H")	
-	set_target_properties(${RAQM_TARGET_NAME} PROPERTIES
+	target_link_libraries(${TARGET_NAME} freetype harfbuzz fribidi)
+	target_compile_definitions(${TARGET_NAME} PUBLIC "HAVE_CONFIG_H")	
+	set_target_properties(${TARGET_NAME} PROPERTIES
 		LINKER_LANGUAGE CXX #Files end with .c so cmake can't decide what the hell this is
 		C_STANDARD 99
 		CXX_STANDARD 11)
