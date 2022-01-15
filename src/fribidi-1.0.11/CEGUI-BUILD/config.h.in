@@ -1,0 +1,23 @@
+#ifndef FRIBIDI_CONFIG_H_GENERATED
+#define FRIBIDI_CONFIG_H_GENERATED
+
+#cmakedefine HAVE_MEMMOVE
+#cmakedefine HAVE_MEMSET
+#cmakedefine HAVE_STRDUP
+
+#cmakedefine01 HAVE_STDLIB_H
+#cmakedefine HAVE_STRING_H
+#cmakedefine01 HAVE_MEMORY_H
+#cmakedefine HAVE_STRINGS_H
+#cmakedefine HAVE_SYS_TIMES_H
+
+// Not entirely correct, but sufficient for us. Should move away from this
+// ancient define and just include individual headers based on individual defs
+#ifdef HAVE_STRINGS_H
+	#define STDC_HEADERS 1
+#endif
+
+#cmakedefine HAVE_STRINGIZE
+#cmakedefine FRIBIDI_NO_DEPRECATED
+
+#endif

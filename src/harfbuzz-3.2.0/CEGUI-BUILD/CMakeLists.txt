@@ -3,24 +3,6 @@
 include (CheckSymbolExists) # CMake module
 include (CheckIncludeFile) # CMake module
 
-# Functions -------------------------------------------------------------------
-
-function (extract_make_variable variable makefile_source)
-  string(REGEX MATCH "${variable} = ([^$]+)\\$" temp "${makefile_source}")
-  string(REGEX MATCHALL "[^ \n\t\\]+" listVar "${CMAKE_MATCH_1}")
-  set (${variable} ${listVar} PARENT_SCOPE)
-endfunction ()
-
-function (add_prefix_to_list var prefix)
-  set (listVar "")
-  foreach (f ${${var}})
-    list(APPEND listVar "${prefix}${f}")
-  endforeach ()
-  set (${var} "${listVar}" PARENT_SCOPE)
-endfunction ()
-
-#------------------------------------------------------------------------------
-
 set(DEPNAME harfbuzz)
 
 set(HB_VERSION_MAJOR 3) 
