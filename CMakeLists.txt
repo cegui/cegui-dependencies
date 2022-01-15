@@ -173,6 +173,10 @@ if (CEGUI_BUILD_TOLUAPP)
 	set(CEGUI_BUILD_LUA TRUE)
 endif()
 
+if (CEGUI_BUILD_HARFBUZZ)
+    set(CEGUI_BUILD_FREETYPE2 TRUE)
+endif()
+
 if (CEGUI_BUILD_RAQM)
 	set(CEGUI_BUILD_HARFBUZZ TRUE)
     set(CEGUI_BUILD_FRIBIDI TRUE)
@@ -287,7 +291,7 @@ if (CEGUI_BUILD_FRIBIDI)
 endif()
 
 if (CEGUI_BUILD_HARFBUZZ)
-    add_subdirectory(src/harfbuzz-1.2.7/CEGUI-BUILD)
+    add_subdirectory(src/harfbuzz-3.2.0/CEGUI-BUILD)
     set(harfbuzzDep harfbuzz)
 endif()
 
