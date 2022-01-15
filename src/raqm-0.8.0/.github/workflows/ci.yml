@@ -1,0 +1,69 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+    - name: Install Python Dependencies
+      run: pip install --upgrade meson ninja
+    - name: MSVC Setup
+      if: matrix.os == 'windows-latest'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+    - name: Meson Setup on Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        # This dir contains a pkg-config which meson will happily use and later fail, so remove it
+        $env:path = ($env:path.Split(';') | Where-Object { $_ -ne 'C:\Strawberry\perl\bin' }) -join ';'
+        meson build
+    - if: matrix.os == 'macos-latest'
+      name: Meson Setup on macOS
+      run: meson build
+    - if: matrix.os == 'ubuntu-latest'
+      name: Install dependencies on Ubuntu
+      run: sudo apt-get install gtk-doc-tools
+    - if: matrix.os == 'ubuntu-latest'
+      name: Meson Setup on Ubuntu
+      run: meson -Ddocs=true build
+    - name: Build
+      run: ninja -C build
+    - name: Test
+      run: ninja -C build test
+    - name: Deploy documentation
+      if: matrix.os == 'ubuntu-latest'
+      run: .ci/deploy-docs.sh
+
+  build-sheenbidi:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+    - name: Install Python Dependencies
+      run: pip install --upgrade meson ninja
+    - name: Meson Setup
+      run: meson -Dsheenbidi=true build
+    - name: Build
+      run: ninja -C build
+    - name: Test
+      run: ninja -C build test
