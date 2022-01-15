@@ -1,7 +1,9 @@
 # Aside CEGUI-specific target generator this is merely a translation of CMakeLists.txt / meson.build shipped with harfbuzz
 
-include (CheckSymbolExists) # CMake module
-include (CheckIncludeFile) # CMake module
+include(CheckSymbolExists) # CMake module
+include(CheckIncludeFile) # CMake module
+include(CheckCCompilerFlag) # CMake module
+#include(CheckLinkerFlag) # CMake module
 
 set(DEPNAME harfbuzz)
 
@@ -10,9 +12,22 @@ set(HB_VERSION_MINOR 2)
 set(HB_VERSION_MICRO 0) 
 set(HB_VERSION "${HB_VERSION_MAJOR}.${HB_VERSION_MINOR}.${HB_VERSION_MICRO}")
 
+check_c_compiler_flag("/utf-8" HAS_UTF8_FLAG)
+#check_linker_flag("C" "-Bsymbolic-functions" HAS_B_SYMBOLIC_FUNCTIONS)
+
 check_include_file(unistd.h HAVE_UNISTD_H)
 check_include_file(sys/mman.h HAVE_SYS_MMAN_H)
 check_include_file(stdbool.h HAVE_STDBOOL_H)
+check_include_file(xlocale.h HAVE_XLOCALE_H)
+
+check_symbol_exists(atexit "stdlib.h" HAVE_ATEXIT)
+check_symbol_exists(mprotect "sys/mman.h" HAVE_MPROTECT)
+check_symbol_exists(sysconf "unistd.h" HAVE_SYSCONF)
+check_symbol_exists(getpagesize "unistd.h" HAVE_GETPAGESIZE)
+check_symbol_exists(mmap "sys/mman.h" HAVE_MMAP)
+check_symbol_exists(isatty "unistd.h" HAVE_ISATTY)
+check_symbol_exists(uselocale "locale.h" HAVE_USELOCALE)
+check_symbol_exists(newlocale "locale.h" HAVE_NEWLOCALE)
 
 #if (NOT MSVC)
 #  set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -23,10 +38,6 @@ check_include_file(stdbool.h HAVE_STDBOOL_H)
 #  endif ()
 #endif ()
 
-if (MSVC)
-  add_definitions(-wd4244 -wd4267 -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)
-endif ()
-
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/../src/Makefile.sources SRCSOURCES)
 extract_make_variable(HB_BASE_headers ${SRCSOURCES})
 
@@ -35,17 +46,20 @@ extract_make_variable(HB_BASE_sources ${SRCSOURCES})
 #extract_make_variable(HB_BASE_RAGEL_GENERATED_sources ${SRCSOURCES})
 
 # Freetype
+set(HAVE_FREETYPE 1)
 # TODO: find_package(Freetype REQUIRED) -> FREETYPE_INCLUDE_DIRS, FREETYPE_LIBRARIES ?
 # FIXME: extract_make_variable is imperfect: extract_make_variable(HB_FT_sources ${SRCSOURCES})
 # FIXME: extract_make_variable is imperfect: extract_make_variable(HB_FT_headers ${SRCSOURCES})
 set(HB_FT_sources hb-ft.cc)
 set(HB_FT_headers hb-ft.h)
-check_symbol_exists(FT_Get_Var_Blend_Coordinates "freetype/freetype.h" HAVE_FT_GET_VAR_BLEND_COORDINATES)
-check_symbol_exists(FT_Set_Var_Blend_Coordinates "freetype/freetype.h" HAVE_FT_SET_VAR_BLEND_COORDINATES)
-check_symbol_exists(HAVE_FT_DONE_MM_VAR "freetype/freetype.h" HAVE_FT_DONE_MM_VAR)
+set(FREETYPE_HEADERS "${CMAKE_BINARY_DIR}/dependencies/include/freetype/freetype.h")
+
+check_symbol_exists(FT_Get_Var_Blend_Coordinates ${FREETYPE_HEADERS} HAVE_FT_GET_VAR_BLEND_COORDINATES)
+check_symbol_exists(FT_Set_Var_Blend_Coordinates ${FREETYPE_HEADERS} HAVE_FT_SET_VAR_BLEND_COORDINATES)
+check_symbol_exists(FT_Done_MM_Var ${FREETYPE_HEADERS} HAVE_FT_DONE_MM_VAR)
 
 # NB: meson is able to generate config without input, but for CMake we had to provide config.h.in
-configure_file(config.h.in ${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz/config.h @ONLY)
+configure_file(config.h.in ${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz/config.h)
 
 ## Define sources and headers of the project
 set(project_sources ${HB_BASE_sources} ${HB_FT_sources}) # ${HB_BASE_RAGEL_GENERATED_sources}) 
@@ -56,6 +70,16 @@ add_prefix_to_list(project_sources "${CMAKE_CURRENT_SOURCE_DIR}/../src/")
 set(HEADERS ${project_headers})
 set(SOURCES ${project_sources})
 
+foreach(_H_FILE ${HEADERS})
+	# From CMake 3.20:
+	#cmake_path(RELATIVE_PATH ${_H_FILE} "${CMAKE_CURRENT_SOURCE_DIR}/../src")
+	get_filename_component(_H_FILE "${_H_FILE}" ABSOLUTE)
+	file(RELATIVE_PATH _H_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../src" ${_H_FILE})
+	configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../src/${_H_FILE}" "${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz/${_H_FILE}" COPYONLY)
+endforeach()                                
+
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../COPYING" "${CMAKE_BINARY_DIR}/dependencies/harfbuzz-license.txt" COPYONLY)
+
 cegui_add_library(${DEPNAME} SOURCES HEADERS)
 
 get_property(HB_ALL_TARGETS DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY BUILDSYSTEM_TARGETS)
@@ -64,6 +88,7 @@ foreach(TARGET_NAME IN LISTS HB_ALL_TARGETS)
 	target_include_directories(${TARGET_NAME}
 		PUBLIC
 			${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz
+			${CMAKE_BINARY_DIR}/dependencies/include # freetype
 		PRIVATE
 			../src
 			${CMAKE_BINARY_DIR}/dependencies/include
@@ -76,23 +101,32 @@ foreach(TARGET_NAME IN LISTS HB_ALL_TARGETS)
 		CXX_STANDARD_REQUIRED ON)
 	
 	if (MSVC)
-		# Disable RTTI
-		target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/GR->)
+		target_compile_definitions(${TARGET_NAME} PUBLIC "_CRT_SECURE_NO_WARNINGS" "_CRT_NONSTDC_NO_WARNINGS")	
+		target_compile_options(${TARGET_NAME} PRIVATE
+			$<$<COMPILE_LANGUAGE:CXX>:/GR->  # disable RTTI
+			$<$<COMPILE_LANGUAGE:CXX>:/EHs-> # disable exception handling
+			$<$<COMPILE_LANGUAGE:CXX>:/EHc-> # disable exception handling
+			$<${HAS_UTF8_FLAG}:/utf-8>
+			#/wd4018
+			#/wd4146
+			#/wd4244
+			#/wd4305
+			#/wd4267
+		)
+	elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+		# Make sure we don't link to libstdc++
+		target_compile_options(${TARGET_NAME} PRIVATE
+			"-fno-rtti"                    # disable RTTI
+			"-fno-exceptions"              # disable exception handling
+			"-fno-threadsafe-statics"      # no threadsafe statics as we do it ourselves
+			"-fvisibility-inlines-hidden"
+		)
+		set_target_properties(${DEPNAME} PROPERTIES LINKER_LANGUAGE C)
 	endif()
 
-	# CEGUI-specific --------------------------------------------------------------
-
-	foreach(_H_FILE ${HEADERS})
-		# From CMake 3.20:
-		#cmake_path(RELATIVE_PATH ${_H_FILE} "${CMAKE_CURRENT_SOURCE_DIR}/../src")
-		get_filename_component(_H_FILE "${_H_FILE}" ABSOLUTE)
-		file(RELATIVE_PATH _H_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../src" ${_H_FILE})
-		add_custom_command(TARGET ${DEPNAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-			"${CMAKE_CURRENT_SOURCE_DIR}/../src/${_H_FILE}" "${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz/${_H_FILE}")
-	endforeach()                                
-
-	add_custom_command(TARGET ${DEPNAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-		"${CMAKE_CURRENT_SOURCE_DIR}/../COPYING" "${CMAKE_BINARY_DIR}/dependencies/harfbuzz-license.txt")
+	if (HAS_B_SYMBOLIC_FUNCTIONS)
+		target_link_options(${TARGET_NAME} PRIVATE "-Bsymbolic-functions")
+	endif()
 
 endforeach()
 
@@ -112,20 +146,8 @@ if (MSVC)
 endif()
 
 if (UNIX OR MINGW)
-  # Make symbols link locally
-  include (CheckCXXCompilerFlag)
-  CHECK_CXX_COMPILER_FLAG(-Bsymbolic-functions CXX_SUPPORTS_FLAG_BSYMB_FUNCS)
-  if (CXX_SUPPORTS_FLAG_BSYMB_FUNCS)
-    link_libraries(-Bsymbolic-functions)
-  endif ()
-
   if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # Make sure we don't link to libstdc++
-    # No threadsafe statics as we do it ourselves
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-exceptions -fno-threadsafe-statics")
     set (CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "m") # libm
     set (CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES "")
-    set_target_properties(${DEPNAME} PROPERTIES LINKER_LANGUAGE C)
-    set_target_properties(${DEPNAME}_static PROPERTIES LINKER_LANGUAGE C)
   endif ()
 endif ()

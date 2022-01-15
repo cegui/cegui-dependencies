@@ -1,6 +1,7 @@
 # Aside CEGUI-specific target generator this is merely a translation of meson.build shipped with raqm
 
 include(CheckSymbolExists) # CMake module
+#include(CheckCXXSymbolExists) # CMake module
 
 set(DEPNAME raqm)
 
@@ -15,15 +16,23 @@ set(SOURCES ../src/raqm.c)
 configure_file(../src/raqm-version.h.in ${CMAKE_BINARY_DIR}/dependencies/include/raqm/raqm-version.h @ONLY)
 
 # FIXME: get rid of versions in folder names? It is too easy to forget to change it here!
-#set(HARFBUZZ_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/../../harfbuzz-3.2.0/src/hb.h")
-#set(FREETYPE_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/../../freetype-2.7.1/include/freetype/freetype.h")
-set(HARFBUZZ_HEADERS "hb.h")
-set(FREETYPE_HEADERS "freetype/freetype.h")
+set(HARFBUZZ_HEADERS "${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz/hb.h")
+set(FREETYPE_HEADERS "${CMAKE_BINARY_DIR}/dependencies/include/freetype/freetype.h")
 check_symbol_exists(FT_Get_Transform ${FREETYPE_HEADERS} HAVE_FT_GET_TRANSFORM)
 check_symbol_exists(hb_buffer_set_invisible_glyph ${HARFBUZZ_HEADERS} HAVE_HB_BUFFER_SET_INVISIBLE_GLYPH) # "hb-buffer.h"
 check_symbol_exists(HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES ${HARFBUZZ_HEADERS} HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES)
 # NB: meson is able to generate config without input, but for CMake we had to provide config.h.in
 configure_file(config.h.in ${CMAKE_BINARY_DIR}/dependencies/include/raqm/config.h @ONLY)
+
+foreach(_H_FILE ${HEADERS})
+	# From CMake 3.20:
+	#cmake_path(RELATIVE_PATH ${_H_FILE} "${CMAKE_CURRENT_SOURCE_DIR}/../src")
+	get_filename_component(_H_FILE "${_H_FILE}" ABSOLUTE)
+	file(RELATIVE_PATH _H_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../src" ${_H_FILE})
+	configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../src/${_H_FILE}" "${CMAKE_BINARY_DIR}/dependencies/include/raqm/${_H_FILE}" COPYONLY)
+endforeach()                                
+
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../COPYING" "${CMAKE_BINARY_DIR}/dependencies/raqm-license.txt" COPYONLY)
 
 cegui_add_library(${DEPNAME} SOURCES HEADERS)
 
@@ -53,19 +62,5 @@ foreach(TARGET_NAME IN LISTS RAQM_ALL_TARGETS)
 		LINKER_LANGUAGE CXX #Files end with .c so cmake can't decide what the hell this is
 		C_STANDARD 99
 		CXX_STANDARD 11)
-
-	# CEGUI-specific --------------------------------------------------------------
-		
-	foreach(_H_FILE ${HEADERS})
-		# From CMake 3.20:
-		#cmake_path(RELATIVE_PATH ${_H_FILE} "${CMAKE_CURRENT_SOURCE_DIR}/../src")
-		get_filename_component(_H_FILE "${_H_FILE}" ABSOLUTE)
-		file(RELATIVE_PATH _H_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../src" ${_H_FILE})
-		add_custom_command(TARGET ${DEPNAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-			"${CMAKE_CURRENT_SOURCE_DIR}/../src/${_H_FILE}" "${CMAKE_BINARY_DIR}/dependencies/include/raqm/${_H_FILE}")
-	endforeach()                                
-
-	add_custom_command(TARGET ${DEPNAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-		"${CMAKE_CURRENT_SOURCE_DIR}/../COPYING" "${CMAKE_BINARY_DIR}/dependencies/raqm-license.txt")
 
 endforeach()

@@ -106,6 +106,16 @@ set(HEADERS
 add_prefix_to_list(SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/../lib/")
 add_prefix_to_list(HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/../lib/")
 
+foreach(_H_FILE ${HEADERS})
+	# From CMake 3.20:
+	#cmake_path(RELATIVE_PATH ${_H_FILE} "${CMAKE_CURRENT_SOURCE_DIR}/../lib")
+	get_filename_component(_H_FILE "${_H_FILE}" ABSOLUTE)
+	file(RELATIVE_PATH _H_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../lib" ${_H_FILE})
+	configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../lib/${_H_FILE}" "${CMAKE_BINARY_DIR}/dependencies/include/fribidi/${_H_FILE}" COPYONLY)
+endforeach()                                
+
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../COPYING" "${CMAKE_BINARY_DIR}/dependencies/fribidi-license.txt" COPYONLY)
+
 cegui_add_library(${DEPNAME} SOURCES HEADERS)
 
 get_property(ALL_TARGETS DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY BUILDSYSTEM_TARGETS)
@@ -138,19 +148,5 @@ foreach(TARGET_NAME IN LISTS ALL_TARGETS)
 	if (CMAKE_BUILD_TYPE MATCHES DEBUG)
 		target_compile_definitions(${TARGET_NAME} PRIVATE "DEBUG")	
 	endif()
-
-	# CEGUI-specific --------------------------------------------------------------
-		
-	foreach(_H_FILE ${HEADERS})
-		# From CMake 3.20:
-		#cmake_path(RELATIVE_PATH ${_H_FILE} "${CMAKE_CURRENT_SOURCE_DIR}/../lib")
-		get_filename_component(_H_FILE "${_H_FILE}" ABSOLUTE)
-		file(RELATIVE_PATH _H_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../lib" ${_H_FILE})
-		add_custom_command(TARGET ${DEPNAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-			"${CMAKE_CURRENT_SOURCE_DIR}/../lib/${_H_FILE}" "${CMAKE_BINARY_DIR}/dependencies/include/fribidi/${_H_FILE}")
-	endforeach()                                
-
-	add_custom_command(TARGET ${DEPNAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-		"${CMAKE_CURRENT_SOURCE_DIR}/../COPYING" "${CMAKE_BINARY_DIR}/dependencies/fribidi-license.txt")
 
 endforeach()
