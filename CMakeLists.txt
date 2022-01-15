@@ -152,7 +152,7 @@ option(CEGUI_BUILD_GLM "Specifies whether to copy the GLM library headers.
 option(CEGUI_BUILD_TOLUAPP "Specifies whether to build the tolua++ library.
 (Required to build the Lua script module for CEGUI)" FALSE)
 
-option(CEGUI_BUILD_LIBRAQM "Specifies whether to build the libraqm library.
+option(CEGUI_BUILD_RAQM "Specifies whether to build the raqm library.
 (Required for bidirectional text (Arabic, Hebrew, etc.) and for Editbox cursor positioning)" TRUE)
 
 if (CEGUI_BUILD_SILLY OR CEGUI_BUILD_CORONA OR CEGUI_BUILD_DEVIL)
@@ -173,7 +173,7 @@ if (CEGUI_BUILD_TOLUAPP)
 	set(CEGUI_BUILD_LUA TRUE)
 endif()
 
-if (CEGUI_BUILD_LIBRAQM)
+if (CEGUI_BUILD_RAQM)
 	set(CEGUI_BUILD_HARFBUZZ TRUE)
     set(CEGUI_BUILD_FRIBIDI TRUE)
     set(CEGUI_BUILD_FREETYPE2 TRUE)
@@ -291,13 +291,16 @@ if (CEGUI_BUILD_HARFBUZZ)
     set(harfbuzzDep harfbuzz)
 endif()
 
-if (CEGUI_BUILD_LIBRAQM)
-    add_subdirectory(src/libraqm-unversioned/CEGUI-BUILD)
-    set(libraqmDep libraqm)
+if (CEGUI_BUILD_RAQM)
+    add_subdirectory(src/raqm-0.8.0/CEGUI-BUILD)
+    set(raqmDep raqm)
 endif()
 
 add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
-    ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep} ${freetypeDep} ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep} ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep}
+    ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep}
+	${freetypeDep} ${fribidiDep} ${harfbuzzDep} ${raqmDep}
+	${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep}
+	${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep}
     ${glewDep} ${tinyxmlDep} ${minizipDep} ${toluappDep} ${glfwDep})
 
 if (MSVC)
