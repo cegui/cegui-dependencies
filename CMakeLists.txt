@@ -17,6 +17,36 @@ function (add_prefix_to_list var prefix)
   set (${var} "${listVar}" PARENT_SCOPE)
 endfunction ()
 
+# CMake's own check_symbol_exists performs linking at the configure time when dependency
+# libraries are not built. So it is unsuitable for checking symbols for one target in
+# another one. This is a simplified check of symbol being declared, without linking.
+macro(cegui_check_symbol_exists SYMBOL FILES VARIABLE)
+	set(OLD_QUIET ${CMAKE_REQUIRED_QUIET})
+	set(CMAKE_REQUIRED_QUIET ON)
+    if(NOT OLD_QUIET)
+		message(CHECK_START "Checking ${SYMBOL} is declared")
+    endif()
+
+	set(FILE_CONTENT "/* */\n")
+    foreach(FILE ${FILES})
+		string(APPEND FILE_CONTENT "#include <${FILE}>\n")
+    endforeach()
+	string(APPEND FILE_CONTENT "\n int main() { (void)${SYMBOL}; return 0; }")
+
+	check_c_source_compiles("${FILE_CONTENT}" ${VARIABLE})
+
+	if(NOT OLD_QUIET)
+		if(${VARIABLE})
+			message(CHECK_PASS "declared")
+		else()
+			message(CHECK_FAIL "not declared")
+		endif()
+	endif()
+
+	unset(FILE_CONTENT)
+	set(CMAKE_REQUIRED_QUIET ${OLD_QUIET})
+endmacro()
+
 #------------------------------------------------------------------------------
 
 if (NOT APPLE AND NOT WIN32 AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")

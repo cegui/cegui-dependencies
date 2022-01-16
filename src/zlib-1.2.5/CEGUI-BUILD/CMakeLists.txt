@@ -12,14 +12,18 @@ cegui_add_library(${DEPNAME} SOURCES NONE)
 set_target_properties(${DEPNAME} PROPERTIES
     DEFINE_SYMBOL ZLIB_DLL)
 
-if (APPLE)
-    set_target_properties(${DEPNAME} PROPERTIES
-        COMPILE_DEFINITIONS Z_HAVE_UNISTD_H)
+get_property(ALL_TARGETS DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY BUILDSYSTEM_TARGETS)
+foreach(TARGET_NAME IN LISTS ALL_TARGETS)
 
-    set_target_properties(${DEPNAME}_static PROPERTIES
-        COMPILE_DEFINITIONS Z_HAVE_UNISTD_H)
-endif()
+	if (APPLE)
+		target_compile_definitions(${TARGET_NAME} PUBLIC "Z_HAVE_UNISTD_H")	
+	elseif (MSVC)
+		target_compile_options(${TARGET_NAME} PRIVATE
+			/wd4996 # Posix name deprecated
+		)
+	endif()
 
+endforeach()
 
 foreach(_H_FILE ${HEADERS})
     add_custom_command(TARGET ${DEPNAME} POST_BUILD 

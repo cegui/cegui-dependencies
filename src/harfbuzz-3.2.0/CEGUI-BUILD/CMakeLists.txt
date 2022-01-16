@@ -52,11 +52,10 @@ set(HAVE_FREETYPE 1)
 # FIXME: extract_make_variable is imperfect: extract_make_variable(HB_FT_headers ${SRCSOURCES})
 set(HB_FT_sources hb-ft.cc)
 set(HB_FT_headers hb-ft.h)
-set(FREETYPE_HEADERS "${CMAKE_BINARY_DIR}/dependencies/include/freetype/freetype.h")
-
-check_symbol_exists(FT_Get_Var_Blend_Coordinates ${FREETYPE_HEADERS} HAVE_FT_GET_VAR_BLEND_COORDINATES)
-check_symbol_exists(FT_Set_Var_Blend_Coordinates ${FREETYPE_HEADERS} HAVE_FT_SET_VAR_BLEND_COORDINATES)
-check_symbol_exists(FT_Done_MM_Var ${FREETYPE_HEADERS} HAVE_FT_DONE_MM_VAR)
+set(CMAKE_REQUIRED_INCLUDES "${CMAKE_BINARY_DIR}/dependencies/include/")
+cegui_check_symbol_exists(FT_Get_Var_Blend_Coordinates "freetype/ftmm.h" HAVE_FT_GET_VAR_BLEND_COORDINATES)
+cegui_check_symbol_exists(FT_Set_Var_Blend_Coordinates "freetype/ftmm.h" HAVE_FT_SET_VAR_BLEND_COORDINATES)
+cegui_check_symbol_exists(FT_Done_MM_Var "freetype/ftmm.h" HAVE_FT_DONE_MM_VAR)
 
 # NB: meson is able to generate config without input, but for CMake we had to provide config.h.in
 configure_file(config.h.in ${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz/config.h)
@@ -82,8 +81,8 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../COPYING" "${CMAKE_BINARY_DIR}/dep
 
 cegui_add_library(${DEPNAME} SOURCES HEADERS)
 
-get_property(HB_ALL_TARGETS DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY BUILDSYSTEM_TARGETS)
-foreach(TARGET_NAME IN LISTS HB_ALL_TARGETS)
+get_property(ALL_TARGETS DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY BUILDSYSTEM_TARGETS)
+foreach(TARGET_NAME IN LISTS ALL_TARGETS)
 
 	target_include_directories(${TARGET_NAME}
 		PUBLIC
@@ -109,7 +108,7 @@ foreach(TARGET_NAME IN LISTS HB_ALL_TARGETS)
 			$<${HAS_UTF8_FLAG}:/utf-8>
 			#/wd4018
 			#/wd4146
-			#/wd4244
+			/wd4244 # Conversion - possible loss of data
 			#/wd4305
 			#/wd4267
 		)
