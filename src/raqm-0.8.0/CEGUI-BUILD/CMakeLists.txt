@@ -1,6 +1,7 @@
 # Aside CEGUI-specific target generator this is merely a translation of meson.build shipped with raqm
 
 include(CheckSymbolExists) # CMake module
+include(CheckCSourceCompiles) # CMake module
 #include(CheckCXXSymbolExists) # CMake module
 
 set(DEPNAME raqm)
@@ -15,12 +16,11 @@ set(SOURCES ../src/raqm.c)
 
 configure_file(../src/raqm-version.h.in ${CMAKE_BINARY_DIR}/dependencies/include/raqm/raqm-version.h @ONLY)
 
-# FIXME: get rid of versions in folder names? It is too easy to forget to change it here!
-set(HARFBUZZ_HEADERS "${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz/hb.h")
-set(FREETYPE_HEADERS "${CMAKE_BINARY_DIR}/dependencies/include/freetype/freetype.h")
-check_symbol_exists(FT_Get_Transform ${FREETYPE_HEADERS} HAVE_FT_GET_TRANSFORM)
-check_symbol_exists(hb_buffer_set_invisible_glyph ${HARFBUZZ_HEADERS} HAVE_HB_BUFFER_SET_INVISIBLE_GLYPH) # "hb-buffer.h"
-check_symbol_exists(HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES ${HARFBUZZ_HEADERS} HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES)
+set(CMAKE_REQUIRED_INCLUDES "${CMAKE_BINARY_DIR}/dependencies/include/")
+cegui_check_symbol_exists(FT_Get_Transform "freetype/freetype.h" HAVE_FT_GET_TRANSFORM)
+set(CMAKE_REQUIRED_INCLUDES "${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz/")
+cegui_check_symbol_exists(hb_buffer_set_invisible_glyph "hb.h" HAVE_HB_BUFFER_SET_INVISIBLE_GLYPH)
+cegui_check_symbol_exists(HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES "hb.h" HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES)
 # NB: meson is able to generate config without input, but for CMake we had to provide config.h.in
 configure_file(config.h.in ${CMAKE_BINARY_DIR}/dependencies/include/raqm/config.h @ONLY)
 
