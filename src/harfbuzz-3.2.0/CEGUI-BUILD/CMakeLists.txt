@@ -7,13 +7,19 @@ include(CheckCCompilerFlag) # CMake module
 
 set(DEPNAME harfbuzz)
 
-set(HB_VERSION_MAJOR 3) 
-set(HB_VERSION_MINOR 2) 
-set(HB_VERSION_MICRO 0) 
+# TODO: this may be not required and may add to binary size with a redundant library copy in DLL, see CEGUI_FREETYPE_WITH_HARFBUZZ
+set(CEGUI_HARFBUZZ_WITH_FREETYPE ON)
+if (NOT CEGUI_BUILD_FREETYPE2)
+	set(CEGUI_HARFBUZZ_WITH_FREETYPE OFF)
+endif()
+
+set(HB_VERSION_MAJOR 3)
+set(HB_VERSION_MINOR 2)
+set(HB_VERSION_MICRO 0)
 set(HB_VERSION "${HB_VERSION_MAJOR}.${HB_VERSION_MINOR}.${HB_VERSION_MICRO}")
 
 check_c_compiler_flag("/utf-8" HAS_UTF8_FLAG)
-#check_linker_flag("C" "-Bsymbolic-functions" HAS_B_SYMBOLIC_FUNCTIONS)
+#check_linker_flag("C" "-Bsymbolic-functions" HAS_B_SYMBOLIC_FUNCTIONS) # FIXME: it says that the language is not supported!
 
 check_include_file(unistd.h HAVE_UNISTD_H)
 check_include_file(sys/mman.h HAVE_SYS_MMAN_H)
@@ -46,16 +52,18 @@ extract_make_variable(HB_BASE_sources ${SRCSOURCES})
 #extract_make_variable(HB_BASE_RAGEL_GENERATED_sources ${SRCSOURCES})
 
 # Freetype
-set(HAVE_FREETYPE 1)
-# TODO: find_package(Freetype REQUIRED) -> FREETYPE_INCLUDE_DIRS, FREETYPE_LIBRARIES ?
-# FIXME: extract_make_variable is imperfect: extract_make_variable(HB_FT_sources ${SRCSOURCES})
-# FIXME: extract_make_variable is imperfect: extract_make_variable(HB_FT_headers ${SRCSOURCES})
-set(HB_FT_sources hb-ft.cc)
-set(HB_FT_headers hb-ft.h)
-set(CMAKE_REQUIRED_INCLUDES "${CMAKE_BINARY_DIR}/dependencies/include/")
-cegui_check_symbol_exists(FT_Get_Var_Blend_Coordinates "freetype/ftmm.h" HAVE_FT_GET_VAR_BLEND_COORDINATES)
-cegui_check_symbol_exists(FT_Set_Var_Blend_Coordinates "freetype/ftmm.h" HAVE_FT_SET_VAR_BLEND_COORDINATES)
-cegui_check_symbol_exists(FT_Done_MM_Var "freetype/ftmm.h" HAVE_FT_DONE_MM_VAR)
+if (CEGUI_HARFBUZZ_WITH_FREETYPE)
+	set(HAVE_FREETYPE 1)
+	# TODO: find_package(Freetype REQUIRED) -> FREETYPE_INCLUDE_DIRS, FREETYPE_LIBRARIES ?
+	# FIXME: extract_make_variable is imperfect: extract_make_variable(HB_FT_sources ${SRCSOURCES})
+	# FIXME: extract_make_variable is imperfect: extract_make_variable(HB_FT_headers ${SRCSOURCES})
+	set(HB_FT_sources hb-ft.cc)
+	set(HB_FT_headers hb-ft.h)
+	set(CMAKE_REQUIRED_INCLUDES "${CMAKE_BINARY_DIR}/dependencies/include/")
+	cegui_check_symbol_exists(FT_Get_Var_Blend_Coordinates "freetype/ftmm.h" HAVE_FT_GET_VAR_BLEND_COORDINATES)
+	cegui_check_symbol_exists(FT_Set_Var_Blend_Coordinates "freetype/ftmm.h" HAVE_FT_SET_VAR_BLEND_COORDINATES)
+	cegui_check_symbol_exists(FT_Done_MM_Var "freetype/ftmm.h" HAVE_FT_DONE_MM_VAR)
+endif()
 
 # NB: meson is able to generate config without input, but for CMake we had to provide config.h.in
 configure_file(config.h.in ${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz/config.h)
@@ -87,13 +95,12 @@ foreach(TARGET_NAME IN LISTS ALL_TARGETS)
 	target_include_directories(${TARGET_NAME}
 		PUBLIC
 			${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz
-			${CMAKE_BINARY_DIR}/dependencies/include # freetype
 		PRIVATE
 			../src
 			${CMAKE_BINARY_DIR}/dependencies/include
 	)
-	target_link_libraries(${TARGET_NAME} freetype) # usp10 gdi32 rpcrt4) # See HB_HAVE_UNISCRIBE, HB_HAVE_GDI, HB_HAVE_DIRECTWRITE on WIN32
-	target_compile_definitions(${TARGET_NAME} PUBLIC "HAVE_CONFIG_H" "HAVE_FREETYPE=1")	
+	#target_link_libraries(${TARGET_NAME} usp10 gdi32 rpcrt4) # See HB_HAVE_UNISCRIBE, HB_HAVE_GDI, HB_HAVE_DIRECTWRITE on WIN32
+	target_compile_definitions(${TARGET_NAME} PUBLIC "HAVE_CONFIG_H")	
 	set_target_properties(${TARGET_NAME} PROPERTIES
 		LINKER_LANGUAGE CXX #Files end with .c so cmake can't decide what the hell this is
 		CXX_STANDARD 11
@@ -127,11 +134,19 @@ foreach(TARGET_NAME IN LISTS ALL_TARGETS)
 		target_link_options(${TARGET_NAME} PRIVATE "-Bsymbolic-functions")
 	endif()
 
-endforeach()
+	if (CEGUI_HARFBUZZ_WITH_FREETYPE)
+		target_compile_definitions(${TARGET_NAME} PUBLIC "HAVE_FREETYPE=1")	
+		target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/dependencies/include)
+		# Prevent circular dependency freetype <-> harfbuzz for dynamic libs
+		if(${TARGET_NAME} STREQUAL ${DEPNAME})
+			target_link_libraries(${TARGET_NAME} PRIVATE freetype)
+		else()
+			add_dependencies(${TARGET_NAME} freetype_static)
+			target_link_libraries(${TARGET_NAME} PRIVATE freetype_static)
+		endif()
+	endif ()
 
-if (TARGET ${DEPNAME}_static)
-	add_dependencies(${DEPNAME}_static freetype)
-endif()
+endforeach()
 
 if (WIN32 AND NOT MINGW AND TARGET ${DEPNAME})
 	target_compile_definitions(${DEPNAME} PUBLIC "HB_DLL_EXPORT")

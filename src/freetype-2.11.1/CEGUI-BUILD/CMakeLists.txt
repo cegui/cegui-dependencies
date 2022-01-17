@@ -1,4 +1,4 @@
-# Mostly copied from original ../CMakeLists.txt
+# See also an original ../CMakeLists.txt
 
 if (NOT CMAKE_VERSION VERSION_LESS 3.3)
   # Allow symbol visibility settings also on static libraries. CMake < 3.3
@@ -10,6 +10,14 @@ if (NOT CMAKE_VERSION VERSION_LESS 3.3)
 endif ()
 
 include(CheckIncludeFile)
+
+set(DEPNAME freetype)
+
+# TODO: this may be not required and may add to binary size with a redundant library copy in DLL, see CEGUI_HARFBUZZ_WITH_FREETYPE
+set(CEGUI_FREETYPE_WITH_HARFBUZZ ON)
+if (NOT CEGUI_BUILD_HARFBUZZ)
+	set(CEGUI_FREETYPE_WITH_HARFBUZZ OFF)
+endif()
 
 set(VERSION_MAJOR "2")
 set(VERSION_MINOR "11")
@@ -83,7 +91,7 @@ if (CEGUI_BUILD_LIBPNG)
     "/\\* +(#define +FT_CONFIG_OPTION_USE_PNG) +\\*/" "\\1"
     FTOPTION_H "${FTOPTION_H}")
 endif ()
-if (CEGUI_BUILD_HARFBUZZ)
+if (CEGUI_FREETYPE_WITH_HARFBUZZ)
   string(REGEX REPLACE
     "/\\* +(#define +FT_CONFIG_OPTION_USE_HARFBUZZ) +\\*/" "\\1"
     FTOPTION_H "${FTOPTION_H}")
@@ -103,7 +111,6 @@ endif ()
 file(GLOB PUBLIC_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/../include/ft2build.h" "${CMAKE_CURRENT_SOURCE_DIR}/../include/freetype/*.h")
 file(GLOB PUBLIC_CONFIG_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/../include/freetype/config/*.h")
 file(GLOB PRIVATE_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/../include/freetype/internal/*.h")
-
 
 set(BASE_SRCS
   src/autofit/autofit.c
@@ -165,6 +172,10 @@ else ()
   list(APPEND BASE_SRCS src/base/ftdebug.c)
 endif ()
 
+# Prevent erasing final configs with default ones
+list(REMOVE_ITEM PUBLIC_CONFIG_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/../include/freetype/config/ftconfig.h")
+list(REMOVE_ITEM PUBLIC_CONFIG_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/../include/freetype/config/ftoption.h")
+
 set(HEADERS
   ${PUBLIC_HEADERS}
   ${PUBLIC_CONFIG_HEADERS}
@@ -173,9 +184,18 @@ set(HEADERS
 
 add_prefix_to_list(BASE_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/../")
 
-set(DEPNAME freetype)
+foreach(_H_FILE ${HEADERS})
+	# From CMake 3.20:
+	#cmake_path(RELATIVE_PATH ${_H_FILE} "${CMAKE_CURRENT_SOURCE_DIR}/../src")
+	get_filename_component(_H_FILE "${_H_FILE}" ABSOLUTE)
+	file(RELATIVE_PATH _H_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../include" ${_H_FILE})
+	configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../include/${_H_FILE}" "${CMAKE_BINARY_DIR}/dependencies/include/${_H_FILE}" COPYONLY)
+endforeach()
 
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/../include/" DESTINATION "${CMAKE_BINARY_DIR}/dependencies/include")
+# Add headers that were already copied to the destination after we copy others
+list(APPEND HEADERS ${FTCONFIG_H_NAME})
+list(APPEND HEADERS ${FTOPTION_H_NAME})
+
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE.TXT" "${CMAKE_BINARY_DIR}/dependencies/freetype-license.txt" COPYONLY)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../docs/FTL.TXT" "${CMAKE_BINARY_DIR}/dependencies/FTL.TXT" COPYONLY)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../docs/GPLv2.TXT" "${CMAKE_BINARY_DIR}/dependencies//GPLv2.TXT" COPYONLY)
@@ -221,22 +241,22 @@ foreach(TARGET_NAME IN LISTS ALL_TARGETS)
 			${CMAKE_BINARY_DIR}/dependencies/include
 		PRIVATE
 			${CMAKE_CURRENT_SOURCE_DIR}/../include
-			${CMAKE_CURRENT_SOURCE_DIR}/../include/harfbuzz
 
 			# Make <ftconfig.h> available for builds/unix/ftsystem.c.
 			${CMAKE_BINARY_DIR}/dependencies/include/freetype/config
 	)
 
 	if (CEGUI_BUILD_ZLIB)
-	  target_link_libraries(${TARGET_NAME} PRIVATE zlib)
+		target_link_libraries(${TARGET_NAME} PRIVATE zlib)
 	endif ()
 	if (CEGUI_BUILD_LIBPNG)
-	  target_link_libraries(${TARGET_NAME} PRIVATE libpng)
+		target_link_libraries(${TARGET_NAME} PRIVATE libpng)
 	endif ()
-
-	# Link static only, prevent circular dependency freetype <-> harfbuzz
-	if (CEGUI_BUILD_HARFBUZZ AND TARGET harfbuzz_static)
-	  target_link_libraries(${TARGET_NAME} PRIVATE harfbuzz_static)
+	if (CEGUI_FREETYPE_WITH_HARFBUZZ)
+		target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz)
+		# Prevent circular dependency freetype <-> harfbuzz for dynamic libs.
+		# Note that harfbuzz already depends on us so we can't make freetype_static -> harfbuzz dependency.
+		target_link_libraries(${TARGET_NAME} PRIVATE harfbuzz_static)
 	endif ()
 
 endforeach()
