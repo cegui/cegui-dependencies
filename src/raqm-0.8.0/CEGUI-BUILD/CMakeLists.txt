@@ -1,9 +1,5 @@
 # Aside CEGUI-specific target generator this is merely a translation of meson.build shipped with raqm
 
-include(CheckSymbolExists) # CMake module
-include(CheckCSourceCompiles) # CMake module
-#include(CheckCXXSymbolExists) # CMake module
-
 set(DEPNAME raqm)
 
 set(RAQM_VERSION_MAJOR 0) 
@@ -44,8 +40,8 @@ if (TARGET ${DEPNAME}_static)
 	add_dependencies(${DEPNAME}_static freetype harfbuzz fribidi)
 endif()
 
-get_property(RAQM_ALL_TARGETS DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY BUILDSYSTEM_TARGETS)
-foreach(TARGET_NAME IN LISTS RAQM_ALL_TARGETS)
+get_property(ALL_TARGETS DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY BUILDSYSTEM_TARGETS)
+foreach(TARGET_NAME IN LISTS ALL_TARGETS)
 
 	target_include_directories(${TARGET_NAME}
 		PUBLIC
