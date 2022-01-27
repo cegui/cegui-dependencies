@@ -193,6 +193,8 @@ struct _raqm {
   size_t           features_len;
 
   raqm_run_t      *runs;
+  raqm_run_t      *runs_pool;
+
   raqm_glyph_t    *glyphs;
   size_t           glyphs_capacity;
 
@@ -200,8 +202,8 @@ struct _raqm {
 };
 
 struct _raqm_run {
-  int            pos;
-  int            len;
+  uint32_t       pos;
+  uint32_t       len;
 
   hb_direction_t direction;
   hb_script_t    script;
@@ -218,9 +220,7 @@ _raqm_u8_to_u32_index (raqm_t   *rq,
 static void
 _raqm_init_text_info (raqm_t *rq)
 {
-  hb_language_t default_lang;
-
-  default_lang = hb_language_get_default ();
+  hb_language_t default_lang = hb_language_get_default ();
   for (size_t i = 0; i < rq->text_len; i++)
   {
     rq->text_info[i].ftface = NULL;
@@ -265,12 +265,12 @@ _raqm_compare_text_info (_raqm_text_info a,
 static void
 _raqm_free_text(raqm_t* rq)
 {
-    free(rq->text);
-    rq->text = NULL;
-    rq->text_info = NULL;
-    rq->text_utf8 = NULL;
-    rq->text_len = 0;
-    rq->text_capacity_bytes = 0;
+  free (rq->text);
+  rq->text = NULL;
+  rq->text_info = NULL;
+  rq->text_utf8 = NULL;
+  rq->text_len = 0;
+  rq->text_capacity_bytes = 0;
 }
 
 static bool
@@ -302,17 +302,44 @@ _raqm_alloc_text(raqm_t *rq,
   return true;
 }
 
-static void
-_raqm_free_runs (raqm_t *rq)
+static raqm_run_t*
+_raqm_alloc_run (raqm_t *rq)
 {
-  raqm_run_t *runs = rq->runs;
+  raqm_run_t *run = rq->runs_pool;
+  if (run)
+  {
+    rq->runs_pool = run->next;
+  }
+  else
+  {
+    run = malloc (sizeof (raqm_run_t));
+    run->font = NULL;
+    run->buffer = NULL;
+  }
+
+  run->pos = 0;
+  run->len = 0;
+  run->direction = HB_DIRECTION_INVALID;
+  run->script = HB_SCRIPT_INVALID;
+  run->next = NULL;
+
+  return run;
+}
+
+static void
+_raqm_free_runs (raqm_run_t *runs)
+{
   while (runs)
   {
     raqm_run_t *run = runs;
     runs = runs->next;
 
-    hb_buffer_destroy (run->buffer);
-    hb_font_destroy (run->font);
+    if (run->buffer)
+      hb_buffer_destroy (run->buffer);
+
+    if (run->font)
+      hb_font_destroy (run->font);
+
     free (run);
   }
 }
@@ -356,6 +383,8 @@ raqm_create (void)
   rq->text_len = 0;
 
   rq->runs = NULL;
+  rq->runs_pool = NULL;
+
   rq->glyphs = NULL;
   rq->glyphs_capacity = 0;
 
@@ -389,7 +418,7 @@ raqm_reference (raqm_t *rq)
  *
  * Decreases the reference count on @rq by one. If the result is zero, then @rq
  * and all associated resources are freed.
- * See cairo_reference().
+ * See raqm_reference().
  *
  * Since: 0.1
  */
@@ -401,7 +430,8 @@ raqm_destroy (raqm_t *rq)
 
   _raqm_release_text_info (rq);
   _raqm_free_text (rq);
-  _raqm_free_runs (rq);
+  _raqm_free_runs (rq->runs);
+  _raqm_free_runs (rq->runs_pool);
   free (rq->glyphs);
   free (rq->features);
   free (rq);
@@ -410,33 +440,43 @@ raqm_destroy (raqm_t *rq)
 /**
  * raqm_clear_contents:
  * @rq: a #raqm_t.
- * @free_memory: whether to free internal buffers or to keep them for reuse.
  *
- * Clears internal state of previously used raqm_t object, making it
- * ready for reuse.
+ * Clears internal state of previously used raqm_t object, making it ready
+ * for reuse and keeping some of allocated memory to increase performance.
  *
  * Since: 0.9
  */
 void
-raqm_clear_contents (raqm_t *rq,
-                     bool    free_memory)
+raqm_clear_contents (raqm_t *rq)
 {
   if (!rq)
     return;
 
   _raqm_release_text_info (rq);
 
-  if (free_memory)
+  /* Return allocated runs to the pool, keep hb buffers for reuse */
+  raqm_run_t *run = rq->runs;
+  while (run)
   {
-    _raqm_free_text (rq);
+    if (run->buffer)
+      hb_buffer_reset (run->buffer);
 
-    free (rq->glyphs);
-    rq->glyphs = NULL;
-    rq->glyphs_capacity = 0;
+    if (run->font)
+    {
+      hb_font_destroy (run->font);
+      run->font = NULL;
+    }
+
+    if (!run->next)
+    {
+      run->next = rq->runs_pool;
+      rq->runs_pool = rq->runs;
+      rq->runs = NULL;
+      break;
+    }
+
+    run = run->next;
   }
-
-  _raqm_free_runs (rq);
-  rq->runs = NULL;
 
   rq->text_len = 0;
   rq->resolved_dir = RAQM_DIRECTION_DEFAULT;
@@ -1150,7 +1190,7 @@ raqm_get_direction_at_index (raqm_t *rq,
 
   for (raqm_run_t *run = rq->runs; run != NULL; run = run->next)
   {
-    if (run->pos <= ((int)index) && ((int)index) < run->pos + run->len) {
+    if (run->pos <= index && index < run->pos + run->len) {
       switch (run->direction) {
         case HB_DIRECTION_LTR:
           return RAQM_DIRECTION_LTR;
@@ -1464,7 +1504,7 @@ _raqm_itemize (raqm_t *rq)
   last = NULL;
   for (size_t i = 0; i < run_count; i++)
   {
-    raqm_run_t *run = calloc (1, sizeof (raqm_run_t));
+    raqm_run_t *run = _raqm_alloc_run (rq);
     if (!run)
     {
       ok = false;
@@ -1490,7 +1530,7 @@ _raqm_itemize (raqm_t *rq)
         _raqm_text_info info = rq->text_info[runs[i].pos + j];
         if (!_raqm_compare_text_info (rq->text_info[run->pos], info))
         {
-          raqm_run_t *newrun = calloc (1, sizeof (raqm_run_t));
+          raqm_run_t *newrun = _raqm_alloc_run (rq);
           if (!newrun)
           {
             ok = false;
@@ -1523,7 +1563,7 @@ _raqm_itemize (raqm_t *rq)
         _raqm_text_info info = rq->text_info[runs[i].pos + j];
         if (!_raqm_compare_text_info (rq->text_info[run->pos], info))
         {
-          raqm_run_t *newrun = calloc (1, sizeof (raqm_run_t));
+          raqm_run_t *newrun = _raqm_alloc_run (rq);
           if (!newrun)
           {
             ok = false;
@@ -1848,7 +1888,8 @@ _raqm_shape (raqm_t *rq)
 
   for (raqm_run_t *run = rq->runs; run != NULL; run = run->next)
   {
-    run->buffer = hb_buffer_create ();
+    if (!run->buffer)
+      run->buffer = hb_buffer_create ();
 
     hb_buffer_add_utf32 (run->buffer, rq->text, rq->text_len,
                          run->pos, run->len);
