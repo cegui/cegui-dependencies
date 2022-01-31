@@ -1,0 +1,6 @@
+#ifndef RAQM_CONFIG_H_GENERATED
+#define RAQM_CONFIG_H_GENERATED
+
+#cmakedefine RAQM_SHEENBIDI @RAQM_SHEENBIDI@
+
+#endif
