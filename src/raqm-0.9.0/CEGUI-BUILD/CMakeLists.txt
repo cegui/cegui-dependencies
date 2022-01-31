@@ -3,7 +3,7 @@
 set(DEPNAME raqm)
 
 set(RAQM_VERSION_MAJOR 0) 
-set(RAQM_VERSION_MINOR 8) 
+set(RAQM_VERSION_MINOR 9) 
 set(RAQM_VERSION_MICRO 0) 
 set(RAQM_VERSION "${RAQM_VERSION_MAJOR}.${RAQM_VERSION_MINOR}.${RAQM_VERSION_MICRO}")
 
@@ -12,11 +12,7 @@ set(SOURCES ../src/raqm.c)
 
 configure_file(../src/raqm-version.h.in ${CMAKE_BINARY_DIR}/dependencies/include/raqm/raqm-version.h @ONLY)
 
-set(CMAKE_REQUIRED_INCLUDES "${CMAKE_BINARY_DIR}/dependencies/include/")
-cegui_check_symbol_exists(FT_Get_Transform "freetype/freetype.h" HAVE_FT_GET_TRANSFORM)
-set(CMAKE_REQUIRED_INCLUDES "${CMAKE_BINARY_DIR}/dependencies/include/harfbuzz/")
-cegui_check_symbol_exists(hb_buffer_set_invisible_glyph "hb.h" HAVE_HB_BUFFER_SET_INVISIBLE_GLYPH)
-cegui_check_symbol_exists(HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES "hb.h" HAVE_DECL_HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES)
+# RAQM_SHEENBIDI is always disabled with CEGUI
 # NB: meson is able to generate config without input, but for CMake we had to provide config.h.in
 configure_file(config.h.in ${CMAKE_BINARY_DIR}/dependencies/include/raqm/config.h @ONLY)
 

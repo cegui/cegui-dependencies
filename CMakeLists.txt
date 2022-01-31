@@ -345,7 +345,7 @@ if (CEGUI_BUILD_HARFBUZZ)
 endif()
 
 if (CEGUI_BUILD_RAQM)
-    add_subdirectory(src/raqm-0.8.0/CEGUI-BUILD)
+    add_subdirectory(src/raqm-0.9.0/CEGUI-BUILD)
     set(raqmDep raqm)
 endif()
 
