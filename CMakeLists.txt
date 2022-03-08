@@ -185,8 +185,8 @@ Enabling this will cause other libs to be built: zlib, libpng, jpeg, libmng, lib
 option(CEGUI_BUILD_GLEW "Specifies whether to build the GLEW library.
 (Required to build the OpenGL renderer module for CEGUI)" TRUE)
 
-option(CEGUI_BUILD_TINYXML "Specifies whether to build the tinyxml library.
-(Required to build the tinyxml based XML parser module for CEGUI)" FALSE)
+option(CEGUI_BUILD_TINYXML2 "Specifies whether to build the tinyxml2 library.
+(Required to build the tinyxml2 based XML parser module for CEGUI)" FALSE)
 
 option(CEGUI_BUILD_MINIZIP "Specifies whether to build the minizip library.
 (Required to build the minizip based resource provider for CEGUI)" FALSE)
@@ -310,9 +310,9 @@ if (CEGUI_BUILD_GLEW)
     set(glewDep glew)
 endif()
 
-if (CEGUI_BUILD_TINYXML)
-    add_subdirectory(src/tinyxml-2.6.2/CEGUI-BUILD)
-    set(tinyxmlDep tinyxml)
+if (CEGUI_BUILD_TINYXML2)
+    add_subdirectory(src/tinyxml2-9.0.0/CEGUI-BUILD)
+    set(tinyxml2Dep tinyxml2)
 endif()
 
 if (CEGUI_BUILD_MINIZIP)
@@ -354,7 +354,7 @@ add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
 	${freetypeDep} ${fribidiDep} ${harfbuzzDep} ${raqmDep}
 	${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep}
 	${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep}
-    ${glewDep} ${tinyxmlDep} ${minizipDep} ${toluappDep} ${glfwDep})
+    ${glewDep} ${tinyxml2Dep} ${minizipDep} ${toluappDep} ${glfwDep})
 
 if (MSVC)
     add_custom_command(TARGET POST_BUILD_CLEANUP COMMAND ${CMAKE_COMMAND} -P "${CMAKE_SOURCE_DIR}/msvc_postbuild.cmake")
