@@ -21,30 +21,30 @@ endfunction ()
 # libraries are not built. So it is unsuitable for checking symbols for one target in
 # another one. This is a simplified check of symbol being declared, without linking.
 macro(cegui_check_symbol_exists SYMBOL FILES VARIABLE)
-	set(OLD_QUIET ${CMAKE_REQUIRED_QUIET})
-	set(CMAKE_REQUIRED_QUIET ON)
+    set(OLD_QUIET ${CMAKE_REQUIRED_QUIET})
+    set(CMAKE_REQUIRED_QUIET ON)
     if(NOT OLD_QUIET)
-		message(CHECK_START "Checking ${SYMBOL} is declared")
+        message(CHECK_START "Checking ${SYMBOL} is declared")
     endif()
 
-	set(FILE_CONTENT "/* */\n")
+    set(FILE_CONTENT "/* */\n")
     foreach(FILE ${FILES})
-		string(APPEND FILE_CONTENT "#include <${FILE}>\n")
+        string(APPEND FILE_CONTENT "#include <${FILE}>\n")
     endforeach()
-	string(APPEND FILE_CONTENT "\n int main() { (void)${SYMBOL}; return 0; }")
+    string(APPEND FILE_CONTENT "\n int main() { (void)${SYMBOL}; return 0; }")
 
-	check_c_source_compiles("${FILE_CONTENT}" ${VARIABLE})
+    check_c_source_compiles("${FILE_CONTENT}" ${VARIABLE})
 
-	if(NOT OLD_QUIET)
-		if(${VARIABLE})
-			message(CHECK_PASS "declared")
-		else()
-			message(CHECK_FAIL "not declared")
-		endif()
-	endif()
+    if(NOT OLD_QUIET)
+        if(${VARIABLE})
+            message(CHECK_PASS "declared")
+        else()
+            message(CHECK_FAIL "not declared")
+        endif()
+    endif()
 
-	unset(FILE_CONTENT)
-	set(CMAKE_REQUIRED_QUIET ${OLD_QUIET})
+    unset(FILE_CONTENT)
+    set(CMAKE_REQUIRED_QUIET ${OLD_QUIET})
 endmacro()
 
 #------------------------------------------------------------------------------
@@ -93,26 +93,37 @@ if (MSVC)
 endif()
 
 macro(cegui_add_library _NAME _SOURCES_VAR _HEADERS_VAR)
+
+    if (CMAKE_SIZEOF_VOID_P EQUAL 4)
+        set(ARCH_SUFFIX x86)
+    else()
+        set(ARCH_SUFFIX x64)
+    endif()
+
+    set(CEGUI_DEPS_LIB_DYNAMIC_DEST_PATH "${CMAKE_BINARY_DIR}/dependencies/lib/dynamic/${ARCH_SUFFIX}")
+    set(CEGUI_DEPS_LIB_STATIC_DEST_PATH "${CMAKE_BINARY_DIR}/dependencies/lib/static/${ARCH_SUFFIX}")
+    set(CEGUI_DEPS_BIN_DEST_PATH "${CMAKE_BINARY_DIR}/dependencies/bin/${ARCH_SUFFIX}")
+
     add_library(${_NAME} SHARED ${${_SOURCES_VAR}} ${${_HEADERS_VAR}})
 
     set_target_properties(${_NAME} PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/dependencies/lib/dynamic"
-        ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/dependencies/lib/dynamic"
-        ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/dependencies/lib/dynamic"
-        ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/dependencies/lib/dynamic"
-        ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/dependencies/lib/dynamic"
+        ARCHIVE_OUTPUT_DIRECTORY "${CEGUI_DEPS_LIB_DYNAMIC_DEST_PATH}"
+        ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CEGUI_DEPS_LIB_DYNAMIC_DEST_PATH}"
+        ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CEGUI_DEPS_LIB_DYNAMIC_DEST_PATH}"
+        ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${CEGUI_DEPS_LIB_DYNAMIC_DEST_PATH}"
+        ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CEGUI_DEPS_LIB_DYNAMIC_DEST_PATH}"
 
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/dependencies/lib/dynamic"
-        LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/dependencies/lib/dynamic"
-        LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/dependencies/lib/dynamic"
-        LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/dependencies/lib/dynamic"
-        LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/dependencies/lib/dynamic"
+        LIBRARY_OUTPUT_DIRECTORY "${CEGUI_DEPS_LIB_DYNAMIC_DEST_PATH}"
+        LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CEGUI_DEPS_LIB_DYNAMIC_DEST_PATH}"
+        LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CEGUI_DEPS_LIB_DYNAMIC_DEST_PATH}"
+        LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL "${CEGUI_DEPS_LIB_DYNAMIC_DEST_PATH}"
+        LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CEGUI_DEPS_LIB_DYNAMIC_DEST_PATH}"
 
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/dependencies/bin"
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/dependencies/bin"
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/dependencies/bin"
-        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/dependencies/bin"
-        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/dependencies/bin")
+        RUNTIME_OUTPUT_DIRECTORY "${CEGUI_DEPS_BIN_DEST_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CEGUI_DEPS_BIN_DEST_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CEGUI_DEPS_BIN_DEST_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CEGUI_DEPS_BIN_DEST_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CEGUI_DEPS_BIN_DEST_PATH}")
 
     if (APPLE)
         set_target_properties(${_NAME} PROPERTIES
@@ -128,23 +139,23 @@ macro(cegui_add_library _NAME _SOURCES_VAR _HEADERS_VAR)
         LIBRARY_OUTPUT_NAME ${_NAME}
         RUNTIME_OUTPUT_NAME ${_NAME}
 
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/dependencies/lib/static"
-        ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/dependencies/lib/static"
-        ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/dependencies/lib/static"
-        ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/dependencies/lib/static"
-        ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/dependencies/lib/static"
+        ARCHIVE_OUTPUT_DIRECTORY "${CEGUI_DEPS_LIB_STATIC_DEST_PATH}"
+        ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CEGUI_DEPS_LIB_STATIC_DEST_PATH}"
+        ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CEGUI_DEPS_LIB_STATIC_DEST_PATH}"
+        ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${CEGUI_DEPS_LIB_STATIC_DEST_PATH}"
+        ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CEGUI_DEPS_LIB_STATIC_DEST_PATH}"
 
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/dependencies/lib/static"
-        LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/dependencies/lib/static"
-        LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/dependencies/lib/static"
-        LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/dependencies/lib/static"
-        LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/dependencies/lib/static"
+        LIBRARY_OUTPUT_DIRECTORY "${CEGUI_DEPS_LIB_STATIC_DEST_PATH}"
+        LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CEGUI_DEPS_LIB_STATIC_DEST_PATH}"
+        LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CEGUI_DEPS_LIB_STATIC_DEST_PATH}"
+        LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL "${CEGUI_DEPS_LIB_STATIC_DEST_PATH}"
+        LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CEGUI_DEPS_LIB_STATIC_DEST_PATH}"
 
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/dependencies/bin"
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/dependencies/bin"
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/dependencies/bin"
-        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/dependencies/bin"
-        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/dependencies/bin")
+        RUNTIME_OUTPUT_DIRECTORY "${CEGUI_DEPS_BIN_DEST_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CEGUI_DEPS_BIN_DEST_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CEGUI_DEPS_BIN_DEST_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CEGUI_DEPS_BIN_DEST_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CEGUI_DEPS_BIN_DEST_PATH}")
 
 endmacro()
 
@@ -152,11 +163,17 @@ option(CEGUI_BUILD_ZLIB "Specifies whether to build the zlib library
 (Required for minizip resource provider support within in CEGUI).
 Note: Some other dependencies may automatically enable the building of this library" FALSE)
 
-option(CEGUI_BUILD_FREETYPE2 "Specifies whether to build the freetype 2 library.
-(Required for truetype and other font support within CEGUI)" TRUE)
+option(CEGUI_BUILD_MINIZIP "Specifies whether to build the minizip library.
+(Required to build the minizip based resource provider for CEGUI)" FALSE)
 
-option(CEGUI_BUILD_PCRE "Specifies whether to build the pcre library.
-(Required for text validation / restriction within CEGUI::Editbox)" TRUE)
+option(CEGUI_BUILD_GLEW "Specifies whether to build the GLEW library.
+(Required to build the OpenGL renderer module for CEGUI)" TRUE)
+
+option(CEGUI_BUILD_GLFW "Specifies whether to build the GLFW library.
+(Required to build the samples framework with OpenGL support.)" TRUE)
+
+option(CEGUI_BUILD_GLM "Specifies whether to copy the GLM library headers.
+(Required to build the OpenGL renderer module for CEGUI)" TRUE)
 
 option(CEGUI_BUILD_EXPAT "Specifies whether to build the expat XML parser library.
 (Required to build the CEGUIExpatParser module for CEGUI)" TRUE)
@@ -164,8 +181,8 @@ option(CEGUI_BUILD_EXPAT "Specifies whether to build the expat XML parser librar
 option(CEGUI_BUILD_XERCES "Specifies whether to build the xerces-c++ XML parser library.
 (Required to build the CEGUIXercesParser module for CEGUI)" FALSE)
 
-option(CEGUI_BUILD_LUA "Specifies whether to build the lua library.
-(Required to build the lua scripting module for CEGUI)" FALSE)
+option(CEGUI_BUILD_TINYXML2 "Specifies whether to build the tinyxml2 library.
+(Required to build the tinyxml2 based XML parser module for CEGUI)" FALSE)
 
 option(CEGUI_BUILD_SILLY "Specifies whether to build the SILLY image loading library.
 Enabling this will cause other libs to be built: zlib, libpng, jpeg
@@ -182,26 +199,20 @@ option(CEGUI_BUILD_DEVIL "Specifies whether to build the IL and ILU libraries.
 Enabling this will cause other libs to be built: zlib, libpng, jpeg, libmng, libtiff
 (Required to build the CEGUIDevILImageCodec module for CEGUI)" FALSE)
 
-option(CEGUI_BUILD_GLEW "Specifies whether to build the GLEW library.
-(Required to build the OpenGL renderer module for CEGUI)" TRUE)
-
-option(CEGUI_BUILD_TINYXML2 "Specifies whether to build the tinyxml2 library.
-(Required to build the tinyxml2 based XML parser module for CEGUI)" FALSE)
-
-option(CEGUI_BUILD_MINIZIP "Specifies whether to build the minizip library.
-(Required to build the minizip based resource provider for CEGUI)" FALSE)
-
-option(CEGUI_BUILD_GLFW "Specifies whether to build the GLFW library.
-(Required to build the samples framework with OpenGL support.)" TRUE)
-
-option(CEGUI_BUILD_GLM "Specifies whether to copy the GLM library headers.
-(Required to build the OpenGL renderer module for CEGUI)" TRUE)
+option(CEGUI_BUILD_LUA "Specifies whether to build the lua library.
+(Required to build the lua scripting module for CEGUI)" FALSE)
 
 option(CEGUI_BUILD_TOLUAPP "Specifies whether to build the tolua++ library.
 (Required to build the Lua script module for CEGUI)" FALSE)
 
+option(CEGUI_BUILD_FREETYPE2 "Specifies whether to build the freetype 2 library.
+(Required for truetype and other font support within CEGUI)" TRUE)
+
 option(CEGUI_BUILD_RAQM "Specifies whether to build the raqm library.
 (Required for bidirectional text (Arabic, Hebrew, etc.) and for Editbox cursor positioning)" TRUE)
+
+option(CEGUI_BUILD_PCRE "Specifies whether to build the pcre library.
+(Required for text validation / restriction within CEGUI::Editbox)" TRUE)
 
 if (CEGUI_BUILD_SILLY OR CEGUI_BUILD_CORONA OR CEGUI_BUILD_DEVIL)
     set(CEGUI_BUILD_LIBPNG TRUE)
@@ -209,8 +220,8 @@ if (CEGUI_BUILD_SILLY OR CEGUI_BUILD_CORONA OR CEGUI_BUILD_DEVIL)
 endif()
 
 if (CEGUI_BUILD_DEVIL)
-	set(CEGUI_BUILD_LIBMNG TRUE)
-	set(CEGUI_BUILD_LIBTIFF TRUE)
+    set(CEGUI_BUILD_LIBMNG TRUE)
+    set(CEGUI_BUILD_LIBTIFF TRUE)
 endif()
 
 if (CEGUI_BUILD_PCRE OR CEGUI_BUILD_LIBPNG OR CEGUI_BUILD_LIBTIFF OR CEGUI_BUILD_MINIZIP)
@@ -218,7 +229,7 @@ if (CEGUI_BUILD_PCRE OR CEGUI_BUILD_LIBPNG OR CEGUI_BUILD_LIBTIFF OR CEGUI_BUILD
 endif()
 
 if (CEGUI_BUILD_TOLUAPP)
-	set(CEGUI_BUILD_LUA TRUE)
+    set(CEGUI_BUILD_LUA TRUE)
 endif()
 
 if (CEGUI_BUILD_HARFBUZZ)
@@ -226,7 +237,7 @@ if (CEGUI_BUILD_HARFBUZZ)
 endif()
 
 if (CEGUI_BUILD_RAQM)
-	set(CEGUI_BUILD_HARFBUZZ TRUE)
+    set(CEGUI_BUILD_HARFBUZZ TRUE)
     set(CEGUI_BUILD_FRIBIDI TRUE)
     set(CEGUI_BUILD_FREETYPE2 TRUE)
 endif()
@@ -351,9 +362,9 @@ endif()
 
 add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
     ${zlibDep} ${libpngDep} ${jpegDep} ${libmngDep} ${libtiffDep}
-	${freetypeDep} ${fribidiDep} ${harfbuzzDep} ${raqmDep}
-	${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep}
-	${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep}
+    ${freetypeDep} ${fribidiDep} ${harfbuzzDep} ${raqmDep}
+    ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep}
+    ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep}
     ${glewDep} ${tinyxml2Dep} ${minizipDep} ${toluappDep} ${glfwDep})
 
 if (MSVC)
