@@ -368,6 +368,6 @@ add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
     ${glewDep} ${tinyxml2Dep} ${minizipDep} ${toluappDep} ${glfwDep})
 
 if (MSVC)
-    add_custom_command(TARGET POST_BUILD_CLEANUP COMMAND ${CMAKE_COMMAND} -P "${CMAKE_SOURCE_DIR}/msvc_postbuild.cmake")
+    add_custom_command(TARGET POST_BUILD_CLEANUP COMMAND ${CMAKE_COMMAND} -P "${CMAKE_SOURCE_DIR}/cmake/msvc_postbuild.cmake")
 endif()
 
