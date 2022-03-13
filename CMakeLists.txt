@@ -176,10 +176,13 @@ option(CEGUI_BUILD_GLM "Specifies whether to copy the GLM library headers.
 (Required to build the OpenGL renderer module for CEGUI)" TRUE)
 
 option(CEGUI_BUILD_EXPAT "Specifies whether to build the expat XML parser library.
-(Required to build the CEGUIExpatParser module for CEGUI)" TRUE)
+(Required to build the CEGUIExpatParser module for CEGUI)" FALSE)
 
 option(CEGUI_BUILD_XERCES "Specifies whether to build the xerces-c++ XML parser library.
 (Required to build the CEGUIXercesParser module for CEGUI)" FALSE)
+
+option(CEGUI_BUILD_PUGIXML "Specifies whether to build the pugixml library.
+(Required to build the pugixml based XML parser module for CEGUI)" TRUE)
 
 option(CEGUI_BUILD_TINYXML2 "Specifies whether to build the tinyxml2 library.
 (Required to build the tinyxml2 based XML parser module for CEGUI)" FALSE)
@@ -321,6 +324,11 @@ if (CEGUI_BUILD_GLEW)
     set(glewDep glew)
 endif()
 
+if (CEGUI_BUILD_PUGIXML)
+    add_subdirectory(src/pugixml-1.12.1/CEGUI-BUILD)
+    set(pugixmlDep pugixml)
+endif()
+
 if (CEGUI_BUILD_TINYXML2)
     add_subdirectory(src/tinyxml2-9.0.0/CEGUI-BUILD)
     set(tinyxml2Dep tinyxml2)
@@ -365,7 +373,7 @@ add_custom_target(POST_BUILD_CLEANUP ALL DEPENDS
     ${freetypeDep} ${fribidiDep} ${harfbuzzDep} ${raqmDep}
     ${pcreDep} ${luaDep} ${expatDep} ${xercesDep} ${SILLYDep}
     ${FreeImageDep} ${coronaDep} ${ILDep} ${ILUDep}
-    ${glewDep} ${tinyxml2Dep} ${minizipDep} ${toluappDep} ${glfwDep})
+    ${glewDep} ${pugixmlDep} ${tinyxml2Dep} ${minizipDep} ${toluappDep} ${glfwDep})
 
 if (MSVC)
     add_custom_command(TARGET POST_BUILD_CLEANUP COMMAND ${CMAKE_COMMAND} -P "${CMAKE_SOURCE_DIR}/cmake/msvc_postbuild.cmake")
